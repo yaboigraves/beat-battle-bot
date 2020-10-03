@@ -2,16 +2,18 @@ const Discord = require("discord.js");
 const client = new Discord.Client();
 const token = require("./token.js");
 
-var callPlayers = false;
-
 //List of battles
-var battles = {};
+let battles = {};
 
 //Storing botMsg and list of players who reacted
 class Battle {
-  constructor(message) {
+  constructor(message, battleTime) {
     this.message = message;
     this.players = [];
+    this.battleTime = battleTime;
+
+    //boolean state variables (maybe do this with a string instead)
+    this.votingPhase = false;
   }
 
   addPlayer(id) {
@@ -24,30 +26,56 @@ class Battle {
 
   //make list of discord tags then send message
   callPlayerList() {
-    var playerTagList = [];
-    var playerList = [...this.players];
+    let playerTagList = [];
+    let playerList = [...this.players];
 
     playerList.forEach((player, i) => {
-      var tag = "<@" + player + ">";
+      let tag = "<@" + player + ">";
       playerTagList.push(tag);
     });
+
+    let tagList = playerTagList.join(", ");
 
     this.message.channel.send(
       `The beatbattle has started! ${playerTagList.join(", ")}`
     );
   }
+
+  timer() {
+    let warningTime = this.battleTime - 3000000;
+
+    let warning = setTimeout(() => {
+      this.message.channel.send(
+        `Beatbattle ends in 5 minutes! ${this.callPlayerList.tagList}`
+      );
+    }, warningTime);
+
+    let timer = setTimeout(() => {
+      this.message.channel.send(`Time's up! ${this.callPlayerList.tagList}`);
+      console.log(this.battleTime);
+    }, this.battleTime);
+  }
+
+  startVotePhase() {}
 }
 
-//Listen for .bb and reply with prompt
+//Listen for !bb and reply with prompt
 client.on("message", (msg) => {
-  if (msg.content == "!bb") {
-    msg.channel.send("LETS GET REAADYYY TOO RUMBLEEEEEEE!");
-    var promptText =
+  if (msg.content.startsWith("!bb")) {
+    let battleMinutes = msg.content.replace(/\D/g, "");
+    let battleTime = parseInt(battleMinutes, 10) * 60 * 1000;
+    let promptText =
       "React to this message with :white_check_mark: to join the beatbattle!";
 
-    msg.reply(promptText).then((botMsg) => {
-      battles[botMsg.channel.id] = new Battle(botMsg);
-    });
+    if (isNaN(parseInt(battleMinutes, 10)) == true) {
+      msg.reply("You need to provide a time for the beatbattle in minutes");
+    } else if (parseInt(battleMinutes, 10) > 120) {
+      msg.reply("Nice try, the maximum time for the timer is 2 hours");
+    } else {
+      msg.reply(promptText).then((botMsg) => {
+        battles[botMsg.channel.id] = new Battle(botMsg, battleTime);
+      });
+    }
   }
 });
 
@@ -63,20 +91,22 @@ client.on("messageReactionAdd", async (reaction, user) => {
     }
   }
 
-  var battle = battles[reaction.message.channel.id];
+  let battle = battles[reaction.message.channel.id];
   if (reaction.emoji.name == "✅") {
     battle.addPlayer(user.id);
-    console.log("hey");
+    //   console.log("hey");
   }
 });
 
 //notify players that the beatbattle has started
 client.on("message", (msg) => {
   if (msg.content.startsWith("!start")) {
-    // Battle.callPlayerList;
     //look at the battles id and find that battle in the battles dictionary
     battles[msg.channel.id].callPlayerList();
+    battles[msg.channel.id].timer();
   }
 });
+
+//take submissions after a battle has entered its voting phase
 
 client.login(token);
