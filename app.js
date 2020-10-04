@@ -3,6 +3,7 @@ const client = new Discord.Client();
 const token = require("./token.js");
 
 //List of battles
+
 let battles = {};
 
 //Storing botMsg and list of players who reacted
@@ -14,6 +15,9 @@ class Battle {
 
     //boolean state variables (maybe do this with a string instead)
     this.votingPhase = false;
+
+    //submissions is a dictionary of playerID's to strings
+    this.submissions = {};
   }
 
   addPlayer(id) {
@@ -46,12 +50,12 @@ class Battle {
 
     let warning = setTimeout(() => {
       this.message.channel.send(
-        `Beatbattle ends in 5 minutes! ${this.callPlayerList.tagList}`
+        `Beatbattle ends in 5 minutes! ${this.callPlayerList()}`
       );
     }, warningTime);
 
     let timer = setTimeout(() => {
-      this.message.channel.send(`Time's up! ${this.callPlayerList.tagList}`);
+      this.message.channel.send(`Time's up! ${this.callPlayerList()}`);
       console.log(this.battleTime);
     }, this.battleTime);
   }
@@ -108,5 +112,13 @@ client.on("message", (msg) => {
 });
 
 //take submissions after a battle has entered its voting phase
+client.on("message", (msg) => {
+  if (msg.content.startsWith("!submit")) {
+    //parse out the link
+    let submissionLink = msg.content.substring(8, msg.content.length);
+    console.log("submission recieved " + submissionLink);
 
+    //so now we need to find the battle in our list of battles that matches
+  }
+});
 client.login(token);
