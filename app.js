@@ -1,3 +1,7 @@
+//NOTE: APP.JS IS THE INITIAL PROTOTYPE CODE, CHUCK THIS IN FUTURE ITERATIONS
+//ACTUAL CODE IS IN INDEX.JS
+
+
 const Discord = require("discord.js");
 const client = new Discord.Client();
 const token = require("./token.js");
