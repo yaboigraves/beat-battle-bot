@@ -45,7 +45,9 @@ class BattleCommand extends Command {
       sample,
     };
 
-    const reactEmbed = this.client.util.embed().setColor('GOLD').setDescription('React to this message to join the battle');
+    const reactEmbed = this.client.util.embed()
+      .setColor('GOLD').setDescription('React to this message to join the battle');
+
     message.channel.send(reactEmbed).then((msg) => {
       msg.react('⚔️');
       msg.awaitReactions(reactFilter, { time: reactTimeout }).then((collected) => {
@@ -53,6 +55,9 @@ class BattleCommand extends Command {
         message.channel.send(`${swords.first().count - 1} people reacted`);
         // loop through and push to battleOpts.playerIds = [];
         // const battle = new Battle(battleOpts);
+        // once we create the battle object, we can save it to the client
+        // message.client.battles[serverID] = the id of the object
+        // so we can easily reference it in other commands to start/stop it etc
       });
     });
   }
