@@ -14,7 +14,7 @@ class BattleCommand extends Command {
   }
 
   async exec(message) {
-    const reactTimeout = 5000;
+    const reactTimeout = 5000; // temporary
     const reactFilter = (reaction, user) => {
       return ['⚔️'].includes(reaction.emoji.name) && user.id !== this.client.user.id;
     };
