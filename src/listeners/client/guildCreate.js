@@ -20,7 +20,7 @@ class GuildListener extends Listener {
       });
 
       // post about information in the first channel we have permission to speak in
-      const channel = guild.channels.cache.find((chan) => chan.type === 'text' && chan.permissionsFor(guild.me).has('SEND_MESSAGES'));
+      const channel = guild.channels.cache.find((chan) => chan.type === 'text' && chan.name === 'general');
       const welcomeText = [
         'Thank you for inviting the battle bot! For more information, please refer to `.help`.\n',
       ];
@@ -42,7 +42,9 @@ class GuildListener extends Listener {
         .setTitle(':crossed_swords: Welcome!')
         .setDescription(welcomeText.join('\n'));
 
-      channel.send(embed);
+      // i was going to have the bot post in the first text channel it had permission to speak in
+      // but i realise because it likely has administrator permissions this is not a good idea
+      if (channel) channel.send(embed);
     }
 
     logger.log(
