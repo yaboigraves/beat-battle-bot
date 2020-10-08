@@ -16,6 +16,7 @@ class InviteCommand extends Command {
   async fetchInvite() {
     if (this.invite) return this.invite;
     const invite = await this.client.generateInvite([
+      'ADMINISTRATOR',
       'READ_MESSAGE_HISTORY',
       'SEND_MESSAGES',
       'EMBED_LINKS',
