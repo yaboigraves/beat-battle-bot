@@ -47,11 +47,11 @@ class Client extends AkairoClient {
   }
 }
 
-logger.success(`battlebot v${pkg.version}`, logger.prefix('~'));
+logger.success(`BattleBot v${pkg.version}`, logger.prefix('~'));
 
 mongoose.connect(process.env.MONGOURL, mongoOptions).then(() => {
-  if (mongoose.connection.readyState !== 1) logger.error('Could not connect to MongoDB.');
-  else if (mongoose.connection.readyState === 1) logger.success('Connected to MongoDB.');
+  if (mongoose.connection.readyState === 1) logger.success('Connected to MongoDB.');
+  else logger.error('Could not connect to MongoDB.');
 });
 
 const client = new Client();
