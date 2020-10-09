@@ -17,6 +17,7 @@
     "rules": {
         "class-methods-use-this": "off",
         "consistent-return": "off",
-        "arrow-body-style": "off"
+        "arrow-body-style": "off",
+        "linebreak-style": "off",
     }
 }
