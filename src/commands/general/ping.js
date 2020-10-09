@@ -8,7 +8,7 @@ class PingCommand extends Command {
       description: {
         icon: ':small_blue_diamond:',
         content: 'Ping the server to see if the bot is responding.',
-        usage: '.ping',
+        usage: '.start',
       },
     });
   }
