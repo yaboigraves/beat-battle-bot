@@ -100,6 +100,10 @@ class BattleCommand extends Command {
           length: time,
           playerIDs: [],
           status: 'BATTLING',
+          reactMessage: {
+            channelID: message.channel.id,
+            messageID: message.id
+          },
           sample,
         };
 

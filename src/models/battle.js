@@ -14,6 +14,14 @@ const battle = new mongoose.Schema({
     maxlength: 18,
   },
 
+  // the message users react to 
+  reactMessage: {
+    type: Object,
+    required: true,
+    channelID: { type: String },
+    messageID: { type: String },
+  },
+
   playerIDs: {
     type: Array,
     required: true,
