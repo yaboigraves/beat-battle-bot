@@ -19,7 +19,7 @@ class BattleCommand extends Command {
           type: Argument.range('number', 10, 240),
           default: '30',
           match: 'option',
-          flag: 'time:',
+          flag: 'length:',
         },
         {
           // time in minutes to watch for reactions
@@ -30,8 +30,6 @@ class BattleCommand extends Command {
           match: 'option',
           flag: 'timeout:',
         },
-
-        //sample
         {
           id: 'sample',
           type: 'string',
@@ -41,12 +39,13 @@ class BattleCommand extends Command {
       description: {
         icon: ':crossed_swords:',
         content: 'Start a beatbattle.',
-        usage: '.battle [length]',
+        usage: '.battle [sample] length:30 timeout:10',
       },
     });
   }
 
   async exec(message, { time, timeout, sample }) {
+    message.channel.send(`${time} ${timeout}`);
     if (!sample) {
       const embed = this.client.util.embed()
         .setColor('RED')
