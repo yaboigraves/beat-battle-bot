@@ -69,6 +69,25 @@ class BattleCommand extends Command {
       }
     });
 
+    // create the battle and append it to the DB in the preparing state
+
+    const battleOpts = {
+      serverID: message.guild.id,
+      length: time,
+      playerIDs: [],
+      status: 'PREPARING',
+      reactMessage: {
+        channelID: message.channel.id,
+        messageID: message.id,
+      },
+      sample,
+    };
+
+    const battle = new Battle(battleOpts);
+    battle.save().then((saved) => {
+      console.log(saved);
+    });
+
     const reactFilter = (reaction, user) => {
       return ['⚔️'].includes(reaction.emoji.name) && user.id !== this.client.user.id;
     };
@@ -94,34 +113,33 @@ class BattleCommand extends Command {
 
         const role = message.guild.roles.cache.find((r) => r.name === 'Participant');
 
-        const battleOpts = {
-          serverID: message.guild.id,
-          length: time,
-          playerIDs: [],
-          status: 'BATTLING',
-          reactMessage: {
-            channelID: message.channel.id,
-            messageID: message.id,
-          },
-          sample,
-        };
-
         const reacts = collected.first().message.reactions.cache;
         message.channel.send(`${reacts.first().count - 1} people reacted`);
         // console.log(swords.first().users.cache);
+
+        // list of all the players in the battle
+        const reactedIDs = [];
+
+        // give all the players the participant role
         reacts.first().users.cache.forEach((user) => {
           if (user.id !== this.client.user.id) {
-            battleOpts.playerIDs.push(user.id);
+            reactedIDs.push(user.id);
             if (role) {
               message.guild.members.cache.get(user.id).roles.add(role);
             }
           }
         });
 
-        const battle = new Battle(battleOpts);
-        battle.save().then((saved) => {
-          console.log(saved);
+        // add all the players to the db and set the state to battling
+        Battle.updateOne({ serverID: message.guild.id, status: 'PREPARING' }, { $set: { playerIDs: reactedIDs, status: 'BATTLING' } }, () => {
+          // console.log('battle begun');
         });
+
+        // const battle = new Battle(battleOpts);
+        // battle.save().then((saved) => {
+        //   console.log(saved);
+        // });
+
         // loop through and push to battleOpts.playerIds = [];
         // const battle = new Battle(battleOpts);
         // once we create the battle object, we can save it to the client

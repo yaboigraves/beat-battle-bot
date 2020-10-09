@@ -20,45 +20,31 @@ class StartCommand extends Command {
     // const startTime = message.editedTimestamp || message.createdTimestamp;
     // sent.edit(`:gear: **Pong!** (${sentTime - startTime}*ms*)`);
 
+    // check the db for a battle in this server that is in the await phase
 
-    
-    //check the db for a battle in this server that is in the await phase
-    //TODO: fix this query, i forget what you said you'd do to make it faster, just remove the for loop part 
-    //
+    // TODO: fix this query, i forget what you said you'd do to make it faster,
+    // just remove the for loop part
 
-    await Battle.findOne({ serverID: message.guild.id, status: "PREPARING" }).then((serverBattle) => {
-      // for (let i = 0; i < serverBattles.length; i += 1) {
-      //   if (serverBattles[i].active) {
-      //     // const embed = this.client.util.embed()
-      //     //   .setColor('RED')
-      //     //   .setTitle(':warning: Battle in Progress')
-      //     //   .setDescription('There\'s already a battle happening in this server!\nPlease wait for it to finish or use `.stop`.');
-
-      //     // return message.channel.send(embed);
-      //   }
-      // }
-
-
-      //check if there's a battle running in the current server
-      
-      if(serverBattle === undefined || serverBattle === null){
-          const embed = this.client.util.embed()
+    await Battle.findOne({ serverID: message.guild.id, status: 'PREPARING' }).then((serverBattle) => {
+      if (serverBattle === undefined || serverBattle === null) {
+        const embed = this.client.util.embed()
           .setColor('RED')
           .setTitle(':warning: No Battle Running')
           .setDescription('There\'s not a battle happening in this server!\nPlease start a battle with `.battle <sample>`.');
 
-          return message.channel.send(embed);
-      }
-      else{
-        message.channel.send("Starting the battle");
-      }
+        message.channel.send(embed);
+      } else {
+        message.channel.send('Starting the battle');
+        // so this is manually starting the battle
+        // set the battle state in the db to Battling
+        // turn off the timer for the start battle thing
+        Battle.updateOne({ serverID: message.guild.id, status: 'PREPARING' }, { $set: { status: 'BATTLING' } }, () => {
 
+        });
+      }
     });
 
-    //tell all users with the participating role that a battle has begun
-
-    
-
+    // tell all users with the participating role that a battle has begun
   }
 }
 
