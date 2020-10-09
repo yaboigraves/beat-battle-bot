@@ -14,7 +14,7 @@ class HelpCommand extends Command {
         icon: ':book:',
         content: 'View information about a command.',
         usage: '.help <command/category>',
-        examples: ['', 'profile', 'ping'],
+        examples: ['', 'battle', 'ping'],
       },
     });
   }

@@ -16,6 +16,7 @@ class GuildListener extends Listener {
         data: {
           name: 'Participant',
           mentionable: true,
+          permissions: [],
         },
       });
 

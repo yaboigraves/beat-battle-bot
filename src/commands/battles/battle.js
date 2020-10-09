@@ -91,6 +91,8 @@ class BattleCommand extends Command {
           return message.channel.send(embed);
         }
 
+        const role = message.guild.roles.cache.find((r) => r.name === 'Participant');
+
         const battleOpts = {
           serverID: message.guild.id,
           length: time,
@@ -103,7 +105,12 @@ class BattleCommand extends Command {
         message.channel.send(`${reacts.first().count - 1} people reacted`);
         // console.log(swords.first().users.cache);
         reacts.first().users.cache.forEach((user) => {
-          if (user.id !== '579456624230531121') battleOpts.playerIDs.push(user.id);
+          if (user.id !== this.client.user.id) {
+            battleOpts.playerIDs.push(user.id);
+            if (role) {
+              message.guild.members.cache.get(user.id).roles.add(role);
+            }
+          }
         });
 
         const battle = new Battle(battleOpts);
