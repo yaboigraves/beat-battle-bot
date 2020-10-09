@@ -5,7 +5,8 @@ const pkg = require('../package.json');
 
 require('dotenv-safe').config();
 
-const owners = process.env.OWNERIDS.includes(',') ? process.env.OWNERIDS.split(',') : process.env.OWNERIDS;
+const owners = process.env.OWNERIDS.includes(',') ? process.env.OWNERIDS.split(',').map((i) => i.trim()) : process.env.OWNERIDS;
+
 const mongoOptions = {
   useNewUrlParser: true,
   useUnifiedTopology: true,
