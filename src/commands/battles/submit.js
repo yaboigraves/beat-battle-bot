@@ -17,11 +17,11 @@ class SubmitCommand extends Command {
             type: 'string',
             // i got the socc on me
             default: 'https://www.youtube.com/watch?v=E_Wih7Bgmxo',
-            match: 'rest',
+            match: 'content',
 
           },
         ],
-        usage: '.submit [submissionLink]',
+        usage: '.submit [link]',
       },
     });
   }
