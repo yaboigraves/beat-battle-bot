@@ -5,7 +5,7 @@ const Battle = require('../../models/battle');
 class BattleCommand extends Command {
   constructor() {
     super('battle', {
-      aliases: ['battle', 'start'],
+      aliases: ['battle'],
       category: 'battles',
       channel: 'guild',
       ratelimit: 1,
@@ -26,10 +26,12 @@ class BattleCommand extends Command {
           // 1 to 15 minutes
           id: 'timeout',
           type: Argument.range('number', 1, 15),
-          default: 5, // temporary, in seconds
+          default: 30, // temporary, in seconds
           match: 'option',
           flag: 'timeout:',
         },
+
+        //sample
         {
           id: 'sample',
           type: 'string',
