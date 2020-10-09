@@ -14,7 +14,7 @@ const battle = new mongoose.Schema({
     maxlength: 18,
   },
 
-  // the message users react to 
+  // the message users react to
   reactMessage: {
     type: Object,
     required: true,

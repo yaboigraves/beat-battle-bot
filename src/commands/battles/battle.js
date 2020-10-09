@@ -101,7 +101,7 @@ class BattleCommand extends Command {
           status: 'BATTLING',
           reactMessage: {
             channelID: message.channel.id,
-            messageID: message.id
+            messageID: message.id,
           },
           sample,
         };
