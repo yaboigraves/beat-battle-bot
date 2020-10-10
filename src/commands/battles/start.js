@@ -40,6 +40,9 @@ class StartCommand extends Command {
         // so this is manually starting the battle
         // set the battle state in the db to Battling
         // turn off the timer for the start battle thing
+
+        // TODO: collect all the players that joined the battle via reaction and add them
+        // done by the listener
         Battle.updateOne({ serverID: message.guild.id, status: 'PREPARING' }, { $set: { status: 'BATTLING' } }, () => {
 
         });
