@@ -45,7 +45,7 @@ class BattleCommand extends Command {
   }
 
   async exec(message, { time, timeout, sample }) {
-    message.channel.send(`${time} ${timeout}`);
+    // message.channel.send(`${time} ${timeout}`);
     if (!sample) {
       const embed = this.client.util.embed()
         .setColor('RED')
@@ -116,6 +116,8 @@ class BattleCommand extends Command {
         const reacts = collected.first().message.reactions.cache;
         message.channel.send(`${reacts.first().count - 1} people reacted`);
         // console.log(swords.first().users.cache);
+
+        message.channel.send(`The battle is starting! ${role}`);
 
         // list of all the players in the battle
         const reactedIDs = [];
