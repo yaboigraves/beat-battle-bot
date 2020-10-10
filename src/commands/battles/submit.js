@@ -30,7 +30,9 @@ class SubmitCommand extends Command {
       const { submissions } = serverBattle;
       submissions[message.author.id] = link;
 
-      Battle.updateOne({ serverID: message.guild.id, status: 'BATTLING' }, { $set: { submissions } });
+      Battle.updateOne({ serverID: message.guild.id, status: 'BATTLING' }, { $set: { submissions } }, () => {
+        // this is a great callback
+      });
     });
 
     // append the submission of that user to the submissions list
