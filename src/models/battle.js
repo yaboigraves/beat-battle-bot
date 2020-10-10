@@ -29,9 +29,8 @@ const battle = new mongoose.Schema({
   },
 
   submissions: {
-    type: Array,
-    required: true,
-    default: [],
+    type: Object,
+    default: {},
   },
 
   // in minutes
