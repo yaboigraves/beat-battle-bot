@@ -30,7 +30,8 @@ const battle = new mongoose.Schema({
 
   submissions: {
     type: Object,
-    default: {},
+    required: true,
+    numSubmissions: { type: Number },
   },
 
   // in minutes
