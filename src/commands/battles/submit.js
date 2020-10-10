@@ -25,14 +25,12 @@ class SubmitCommand extends Command {
   }
 
   async exec(message, { link }) {
-    const userSubmitID = message.author.id;
     // check if there's a battle running in the current server that the user is a participant in
     await Battle.findOne({ serverID: message.guild.id, status: 'BATTLING' }).then((serverBattle) => {
-      const subs = serverBattle.submissions;
-      subs.numSubmissions += 1;
+      const { submissions } = serverBattle;
+      submissions[message.author.id] = link;
 
-      subs[userSubmitID] = link;
-      Battle.updateOne({ serverID: message.guild.id, status: 'BATTLING' }, { $set: { submissions: subs } });
+      Battle.updateOne({ serverID: message.guild.id, status: 'BATTLING' }, { $set: { submissions } });
     });
 
     // append the submission of that user to the submissions list

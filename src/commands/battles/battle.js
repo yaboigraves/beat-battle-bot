@@ -75,7 +75,6 @@ class BattleCommand extends Command {
       serverID: message.guild.id,
       length: time,
       playerIDs: [],
-      submissions: { numSubmissions: 0 },
       status: 'PREPARING',
       reactMessage: {
         channelID: message.channel.id,
