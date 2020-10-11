@@ -34,6 +34,12 @@ const battle = new mongoose.Schema({
     default: {},
   },
 
+  submissionsScores: {
+    type: Object,
+    required: true,
+    default: {},
+  },
+
   // in minutes
   length: {
     type: Number,
