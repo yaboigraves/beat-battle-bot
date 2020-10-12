@@ -32,12 +32,11 @@ class SubmitCommand extends Command {
 
       Battle.updateOne({ serverID: message.guild.id, status: 'BATTLING' }, { $set: { submissions } }, () => {
         // this is a great callback
+        return message.channel.send(`Submission Recieved <@${message.author.id}>!`);
       });
     });
 
     // append the submission of that user to the submissions list
-
-    return message.channel.send('Submission Recieved!');
   }
 }
 
