@@ -1,5 +1,4 @@
 const { Command } = require('discord-akairo');
-const battle = require('../../models/battle');
 const Battle = require('../../models/battle');
 
 class VoteCommand extends Command {
@@ -58,34 +57,34 @@ class VoteCommand extends Command {
               // let submissionScore = 0;
 
               for (let j = 0; j < reactions.length; j += 1) {
-                console.log(reactions[j].emoji.name);
+                // console.log(reactions[j].emoji.name);
 
                 // figure out what score is being given to the submission
                 // update the db submission object with the score of that submission
 
                 switch (reactions[j].emoji.name) {
                   case '1️⃣':
-                    console.log('got 1 vote');
+                    // console.log('got 1 vote');
                     submissionScore += 1;
 
                     break;
                   case '2️⃣':
-                    console.log('got 2 vote');
+                    // console.log('got 2 vote');
                     submissionScore += 2;
 
                     break;
                   case '3️⃣':
-                    console.log('got 3 vote');
+                    // console.log('got 3 vote');
                     submissionScore += 3;
 
                     break;
                   case '4️⃣':
-                    console.log('got 4 vote');
+                    // console.log('got 4 vote');
                     submissionScore += 4;
 
                     break;
                   case '5️⃣':
-                    console.log('got 5 vote');
+                    // console.log('got 5 vote');
                     submissionScore += 5;
                     break;
 
@@ -103,7 +102,7 @@ class VoteCommand extends Command {
                 });
               });
 
-              console.log(`Collected ${collected.size} items`);
+              // console.log(`Collected ${collected.size} items`);
               return message.channel.send('voting has ended');
             });
           });

@@ -5,7 +5,7 @@ class SubmitCommand extends Command {
   constructor() {
     super('submit', {
       aliases: ['submit'],
-      category: 'battle',
+      category: 'battles',
       channel: 'guild',
       args: [
         {
