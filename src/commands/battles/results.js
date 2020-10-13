@@ -42,6 +42,7 @@ class ResultsCommand extends Command {
           .setTitle(` ${serverBattle.submissions[serverBattle.playerIDs[i]]}`)
           .setDescription(`Submitted By : ${serverBattle.playerIDs[i]} \n Score : ${score}`);
 
+        // todo: only post the top three at the end maybe?
         message.channel.send(resultEmbed);
 
         // check if the score is larger than the current winners score

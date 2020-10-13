@@ -66,22 +66,18 @@ class VoteCommand extends Command {
                   case '1️⃣':
                     // console.log('got 1 vote');
                     submissionScore += 1;
-
                     break;
                   case '2️⃣':
                     // console.log('got 2 vote');
                     submissionScore += 2;
-
                     break;
                   case '3️⃣':
                     // console.log('got 3 vote');
                     submissionScore += 3;
-
                     break;
                   case '4️⃣':
                     // console.log('got 4 vote');
                     submissionScore += 4;
-
                     break;
                   case '5️⃣':
                     // console.log('got 5 vote');
@@ -103,7 +99,6 @@ class VoteCommand extends Command {
               });
 
               // console.log(`Collected ${collected.size} items`);
-              return message.channel.send('voting has ended');
             });
           });
       });
