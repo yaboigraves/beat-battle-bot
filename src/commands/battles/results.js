@@ -62,6 +62,8 @@ class ResultsCommand extends Command {
 
       message.channel.send(winnerEmbed);
 
+      // TODO: remove participant role from all the users in the battle
+
       // TODO: re-enable
       /*
         Battle.updateOne({ serverID: message.guild.id, status: 'BATTLING' },
