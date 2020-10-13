@@ -25,6 +25,10 @@ class ResultsCommand extends Command {
     message.channel.send(header);
 
     await Battle.findOne({ serverID: message.guild.id, status: 'VOTING' }).then((serverBattle) => {
+      if (serverBattle == null) {
+        return message.channel.send('No battle ready for results yet');
+      }
+
       winner = {
         id: serverBattle.playerIDs[0],
         submissionLink: '',

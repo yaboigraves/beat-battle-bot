@@ -113,7 +113,7 @@ class BattleCommand extends Command {
           const role = message.guild.roles.cache.find((r) => r.name === 'Participant');
 
           const reacts = collected.first().message.reactions.cache;
-          message.channel.send(`${reacts.first().count - 1} people reacted`);
+          // message.channel.send(`${reacts.first().count - 1} people reacted`);
           // console.log(swords.first().users.cache);
 
           // list of all the players in the battle
