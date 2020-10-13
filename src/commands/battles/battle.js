@@ -140,6 +140,8 @@ class BattleCommand extends Command {
           -once results are triggered the battle ends
           */
 
+          // cant do this on a testing db, need to move it to replica
+
           const changeStream = Battle.watch();
 
           changeStream.on('change', (next) => {
