@@ -1,22 +1,33 @@
-const { Command } = require('discord-akairo');
-const battle = require('../../models/battle');
+const { Command, Argument } = require('discord-akairo');
 const Battle = require('../../models/battle');
 
 class VoteCommand extends Command {
+  // TODO: add timeout argument to vote command
   constructor() {
     super('vote', {
       aliases: ['vote'],
       category: 'battles',
       description: {
-        icon: ':small_blue_diamond:',
-        content: 'Trigger the voting phase.',
-        usage: '.vote',
+        icon: ':ballot_box:',
+        content: 'Triggers the voting phase.',
+        usage: '.vote timeout:30',
       },
+      args: [
+        {
+          // time in minutes to watch for reactions
+          // 1 to 15 minutes
+          id: 'timeout',
+          type: Argument.range('number', 1, 60),
+          default: 30, // temporary, in seconds
+          match: 'option',
+          flag: 'timeout:',
+        },
+
+      ],
     });
   }
 
-  async exec(message) {
-    // check if its voting time (this is flipped after the battle timer is done)
+  async exec(message, { timeout }) {
     let serverBattle;
 
     const filter = (reaction, user) => {
@@ -24,91 +35,92 @@ class VoteCommand extends Command {
     };
 
     await Battle.findOne({ serverID: message.guild.id, status: 'VOTING' }).then((battleResults) => {
-      // loop through all the playerid's and post their submissions, add 1-5 reactions below them
       if (battleResults === null) {
-        return message.channel.send('No battle in the voting phase to vote in buster');
+        return message.channel.send('No battle in the voting phase.');
       }
+
+      // TODO: this variable is no longer required its a superflous alias
       serverBattle = battleResults;
-      // this filter will ignore any reactions other than 1,2,3,4,5 and ignores the bots reactions
-    });
-    for (let i = 0; i < serverBattle.playerIDs.length; i += 1) {
-      const reactEmbed = this.client.util.embed()
+
+      const votingEmbed = this.client.util.embed()
         .setColor('GOLD')
-        .setTitle(`:crossed_swords: ${serverBattle.submissions[serverBattle.playerIDs[i]]}`);
-        // .setDescription('React with 1️⃣, 2️⃣ .');
+        .setTitle(':ballot_box: Voting Has Begun!')
+        .setDescription(`React with 1️⃣,2️⃣,3️⃣,4️⃣,5️⃣ to vote.\nPlease wait until all numbers have been loaded.\nVoting will end in ${timeout} seconds`);
 
-      message.channel.send(reactEmbed).then((msg) => {
-        let submissionScore = 0;
-        msg.react('1️⃣')
-          .then(() => msg.react('2️⃣'))
-          .then(() => msg.react('3️⃣'))
-          .then(() => msg.react('4️⃣'))
-          .then(() => msg.react('5️⃣'))
-          .then(() => {
-            // this will need to be moved to a list or something otherwise
-            // these are broken once we loop
-            const collector = msg.createReactionCollector(filter, { time: 15000 });
-            // collector.on('collect', (reaction, user) => {
-            //   console.log(`Collected ${reaction.emoji.name} from ${user.tag}`);
-            // });
+      message.channel.send(votingEmbed);
 
-            collector.on('end', (collected) => {
-              // go through all the collected emojis and just print their name to start
-              const reactions = collected.array();
-              // let submissionScore = 0;
+      for (let i = 0; i < serverBattle.playerIDs.length; i += 1) {
+        const reactEmbed = this.client.util.embed()
+          .setColor('GOLD')
+          .setTitle(`:crossed_swords: ${serverBattle.submissions[serverBattle.playerIDs[i]]}`);
 
-              for (let j = 0; j < reactions.length; j += 1) {
-                console.log(reactions[j].emoji.name);
+        message.channel.send(reactEmbed).then((msg) => {
+          let submissionScore = 0;
+          msg.react('1️⃣')
+            .then(() => msg.react('2️⃣'))
+            .then(() => msg.react('3️⃣'))
+            .then(() => msg.react('4️⃣'))
+            .then(() => msg.react('5️⃣'))
+            .then(() => {
+              const collector = msg.createReactionCollector(filter, { time: timeout * 1000 });
 
-                // figure out what score is being given to the submission
-                // update the db submission object with the score of that submission
+              collector.on('end', (collected) => {
+                // go through all the collected emojis and just print their name to start
+                const reactions = collected.array();
+                // let submissionScore = 0;
 
-                switch (reactions[j].emoji.name) {
-                  case '1️⃣':
-                    console.log('got 1 vote');
-                    submissionScore += 1;
+                for (let j = 0; j < reactions.length; j += 1) {
+                  // console.log(reactions[j].emoji.name);
 
-                    break;
-                  case '2️⃣':
-                    console.log('got 2 vote');
-                    submissionScore += 2;
+                  // figure out what score is being given to the submission
+                  // update the db submission object with the score of that submission
 
-                    break;
-                  case '3️⃣':
-                    console.log('got 3 vote');
-                    submissionScore += 3;
+                  switch (reactions[j].emoji.name) {
+                    case '1️⃣':
+                      // console.log('got 1 vote');
+                      submissionScore += 1;
+                      break;
+                    case '2️⃣':
+                      // console.log('got 2 vote');
+                      submissionScore += 2;
+                      break;
+                    case '3️⃣':
+                      // console.log('got 3 vote');
+                      submissionScore += 3;
+                      break;
+                    case '4️⃣':
+                      // console.log('got 4 vote');
+                      submissionScore += 4;
+                      break;
+                    case '5️⃣':
+                      // console.log('got 5 vote');
+                      submissionScore += 5;
+                      break;
 
-                    break;
-                  case '4️⃣':
-                    console.log('got 4 vote');
-                    submissionScore += 4;
-
-                    break;
-                  case '5️⃣':
-                    console.log('got 5 vote');
-                    submissionScore += 5;
-                    break;
-
-                  default:
-                    break;
+                    default:
+                      break;
+                  }
                 }
-              }
 
-              Battle.findOne({ serverID: message.guild.id, status: 'VOTING' }).then((serverBattle2) => {
-                const { submissionsScores } = serverBattle2;
-                submissionsScores[serverBattle2.playerIDs[i]] = submissionScore;
+                // note, this is happening multiple times because their is one collector
+                // for every submission
+                // this should be handled by some kind of timer listener later
 
-                Battle.updateOne({ serverID: message.guild.id, status: 'VOTING' }, { $set: { submissionsScores } }, () => {
-                  // this is a great callback
+                Battle.findOne({ serverID: message.guild.id, status: 'VOTING' }).then((serverBattle2) => {
+                  const { submissionsScores } = serverBattle2;
+                  submissionsScores[serverBattle2.playerIDs[i]] = submissionScore;
+
+                  Battle.updateOne({ serverID: message.guild.id, status: 'VOTING' }, { $set: { submissionsScores } }, () => {
+                    // this is a great callback
+                  });
                 });
               });
-
-              console.log(`Collected ${collected.size} items`);
-              return message.channel.send('voting has ended');
             });
-          });
-      });
-    }
+        });
+      }
+    });
+
+    // TODO: add announcement that voting has started and ended (listener)
   }
 }
 

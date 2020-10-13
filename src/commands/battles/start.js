@@ -5,10 +5,10 @@ class StartCommand extends Command {
   constructor() {
     super('start', {
       aliases: ['start'],
-      category: 'battle',
+      category: 'battles',
       description: {
-        icon: ':small_blue_diamond:',
-        content: 'Start the battle!.',
+        icon: ':arrow_forward:',
+        content: 'Starts the battle.',
         usage: '.start',
       },
     });

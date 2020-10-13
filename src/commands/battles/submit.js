@@ -5,7 +5,7 @@ class SubmitCommand extends Command {
   constructor() {
     super('submit', {
       aliases: ['submit'],
-      category: 'battle',
+      category: 'battles',
       channel: 'guild',
       args: [
         {
@@ -16,8 +16,8 @@ class SubmitCommand extends Command {
         },
       ],
       description: {
-        icon: ':small_blue_diamond:',
-        content: 'Submit your beat.',
+        icon: ':love_letter:',
+        content: 'Submits a link to the battle, soundcloud link preferred.',
 
         usage: '.submit [link]',
       },
@@ -32,12 +32,11 @@ class SubmitCommand extends Command {
 
       Battle.updateOne({ serverID: message.guild.id, status: 'BATTLING' }, { $set: { submissions } }, () => {
         // this is a great callback
+        return message.channel.send(`Submission Recieved <@${message.author.id}>!`);
       });
     });
 
     // append the submission of that user to the submissions list
-
-    return message.channel.send('Submission Recieved!');
   }
 }
 
