@@ -168,11 +168,14 @@ class BattleCommand extends Command {
                 // after that timer is up we mention all users in the battle then switch to voting
 
                 setTimeout(() => {
-                  console.log('battles over!');
+                  Battle.updateOne({ serverID: message.guild.id, status: 'BATTLING' }, { $set: { playerIDs: reactedIDs, status: 'VOTING' } }, () => {
+                    return message.channel.send(`Battles over!! ${role}`);
+                  });
                 }, time * 1000);
                 break;
               case 'VOTING':
                 // if we're switching to voting then we start a timer? just wait for voting phase
+                console.log('voting phase activated');
                 break;
 
               case 'FINISHED':
