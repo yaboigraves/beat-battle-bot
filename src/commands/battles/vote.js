@@ -1,7 +1,8 @@
-const { Command } = require('discord-akairo');
+const { Command, Argument } = require('discord-akairo');
 const Battle = require('../../models/battle');
 
 class VoteCommand extends Command {
+  // TODO: add timeout argument to vote command
   constructor() {
     super('vote', {
       aliases: ['vote'],
@@ -11,11 +12,22 @@ class VoteCommand extends Command {
         content: 'Trigger the voting phase.',
         usage: '.vote',
       },
+      args: [
+        {
+          // time in minutes to watch for reactions
+          // 1 to 15 minutes
+          id: 'timeout',
+          type: Argument.range('number', 1, 60),
+          default: 30, // temporary, in seconds
+          match: 'option',
+          flag: 'timeout:',
+        },
+
+      ],
     });
   }
 
-  async exec(message) {
-    // check if its voting time (this is flipped after the battle timer is done)
+  async exec(message, { timeout }) {
     let serverBattle;
 
     const filter = (reaction, user) => {
@@ -23,17 +35,24 @@ class VoteCommand extends Command {
     };
 
     await Battle.findOne({ serverID: message.guild.id, status: 'VOTING' }).then((battleResults) => {
-      // loop through all the playerid's and post their submissions, add 1-5 reactions below them
       if (battleResults === null) {
-        return message.channel.send('No battle in the voting phase to vote in buster');
+        return message.channel.send('No battle in the voting phase.');
       }
+
+      // TODO: this variable is no longer required its a superflous alias
       serverBattle = battleResults;
+
+      const votingEmbed = this.client.util.embed()
+        .setColor('GOLD')
+        .setTitle(':ballot_box:  Voting Has Begun!')
+        .setDescription(`React with 1️⃣,2️⃣,3️⃣,4️⃣,5️⃣ to vote.\nPlease wait until all numbers have been loaded.\nVoting will end in ${timeout} seconds`);
+
+      message.channel.send(votingEmbed);
 
       for (let i = 0; i < serverBattle.playerIDs.length; i += 1) {
         const reactEmbed = this.client.util.embed()
           .setColor('GOLD')
           .setTitle(`:crossed_swords: ${serverBattle.submissions[serverBattle.playerIDs[i]]}`);
-          // .setDescription('React with 1️⃣, 2️⃣ .');
 
         message.channel.send(reactEmbed).then((msg) => {
           let submissionScore = 0;
@@ -43,12 +62,7 @@ class VoteCommand extends Command {
             .then(() => msg.react('4️⃣'))
             .then(() => msg.react('5️⃣'))
             .then(() => {
-              // this will need to be moved to a list or something otherwise
-              // these are broken once we loop
-              const collector = msg.createReactionCollector(filter, { time: 15000 });
-              // collector.on('collect', (reaction, user) => {
-              //   console.log(`Collected ${reaction.emoji.name} from ${user.tag}`);
-              // });
+              const collector = msg.createReactionCollector(filter, { time: timeout * 1000 });
 
               collector.on('end', (collected) => {
                 // go through all the collected emojis and just print their name to start
@@ -88,6 +102,10 @@ class VoteCommand extends Command {
                   }
                 }
 
+                // note, this is happening multiple times because their is one collector
+                // for every submission
+                // this should be handled by some kind of timer listener later
+
                 Battle.findOne({ serverID: message.guild.id, status: 'VOTING' }).then((serverBattle2) => {
                   const { submissionsScores } = serverBattle2;
                   submissionsScores[serverBattle2.playerIDs[i]] = submissionScore;
@@ -96,15 +114,13 @@ class VoteCommand extends Command {
                     // this is a great callback
                   });
                 });
-
-                // console.log(`Collected ${collected.size} items`);
               });
             });
         });
       }
     });
 
-    // TODO: add announcement that voting has started and ended
+    // TODO: add announcement that voting has started and ended (listener)
   }
 }
 
