@@ -129,6 +129,23 @@ class BattleCommand extends Command {
             }
           });
 
+          /*
+          Listener Prototype
+          -here we create a listener thats waiting for the status to get set to battling
+            -once battling a timer is created to switch from battling to voting
+              (maybe add a submission phase)
+          -once voting is switched to we wait for the .vote command to get run once users are ready
+          -once vote is run we then wait a predefined amount of time before triggering results
+            -or we wait for the .results command
+          -once results are triggered the battle ends
+          */
+
+          const changeStream = Battle.watch();
+
+          changeStream.on('change', (next) => {
+            console.log('received a change to the collection: \t', next);
+          });
+
           // add all the players to the db and set the state to battling
           Battle.updateOne({ serverID: message.guild.id, status: 'PREPARING' }, { $set: { playerIDs: reactedIDs, status: 'BATTLING' } }, () => {
             return message.channel.send(`The battle is starting! ${role}`);
