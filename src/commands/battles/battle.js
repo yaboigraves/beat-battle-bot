@@ -145,7 +145,43 @@ class BattleCommand extends Command {
           const changeStream = Battle.watch();
 
           changeStream.on('change', (next) => {
-            console.log('received a change to the collection: \t', next);
+            // console.log('received a change to the collection: \t', next);
+
+            // first check the operation type, because for some fucking
+            // reason the same info is stored differently
+
+            let currentStatus = '';
+
+            if (next.operationType === 'replace') {
+              // console.log('replace operation');
+              currentStatus = next.fullDocument.status;
+            } else if (next.operationType === 'update') {
+              // console.log('update operation');
+              currentStatus = next.updateDescription.updatedFields.status;
+            }
+
+            console.log(currentStatus);
+
+            switch (currentStatus) {
+              case 'BATTLING':
+                // if we're switching into a battle then the battle timer needs to be setup
+                // after that timer is up we mention all users in the battle then switch to voting
+
+                setTimeout(() => {
+                  console.log('battles over!');
+                }, time * 1000);
+                break;
+              case 'VOTING':
+                // if we're switching to voting then we start a timer? just wait for voting phase
+                break;
+
+              case 'FINISHED':
+                // end the battle, take away participant roles, update leaderboards
+                break;
+
+              default:
+                break;
+            }
           });
 
           // add all the players to the db and set the state to battling
