@@ -31,6 +31,8 @@ class ResultsCommand extends Command {
         score: 0,
       };
 
+      const role = message.guild.roles.cache.find((r) => r.name === 'Participant');
+
       // loop through all the player ids
       for (let i = 0; i < serverBattle.playerIDs.length; i += 1) {
         const { submissionsScores } = serverBattle;
@@ -40,7 +42,7 @@ class ResultsCommand extends Command {
         const resultEmbed = this.client.util.embed()
           .setColor('BLUE')
           .setTitle(` ${serverBattle.submissions[serverBattle.playerIDs[i]]}`)
-          .setDescription(`Submitted By : ${serverBattle.playerIDs[i]} \n Score : ${score}`);
+          .setDescription(`Submitted By : <@${serverBattle.playerIDs[i]}> \n Score : ${score}`);
 
         // todo: only post the top three at the end maybe?
         message.channel.send(resultEmbed);
@@ -52,6 +54,9 @@ class ResultsCommand extends Command {
           winner.submissionLink = serverBattle.submissions[winner.id];
           winner.score = score;
         }
+
+        // while we're at it and looping thru player id's remove their participant role
+        message.guild.members.cache.get(serverBattle.playerIDs[i]).roles.remove(role);
       }
 
       // after the await, we then display the winner and then update leaderboards
@@ -61,8 +66,6 @@ class ResultsCommand extends Command {
         .setDescription(`:crown: The Winner is - <@${winner.id}>`);
 
       message.channel.send(winnerEmbed);
-
-      // TODO: remove participant role from all the users in the battle
 
       // TODO: re-enable
       /*

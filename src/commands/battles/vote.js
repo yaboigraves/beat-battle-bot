@@ -30,6 +30,11 @@ class VoteCommand extends Command {
       serverBattle = battleResults;
       // this filter will ignore any reactions other than 1,2,3,4,5 and ignores the bots reactions
     });
+
+    // TODO: stop this from running if theirs no battle ready to be voted on
+
+    // TODO: add announcement that voting has started and ended
+
     for (let i = 0; i < serverBattle.playerIDs.length; i += 1) {
       const reactEmbed = this.client.util.embed()
         .setColor('GOLD')
