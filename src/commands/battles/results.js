@@ -7,8 +7,8 @@ class ResultsCommand extends Command {
       aliases: ['results'],
       category: 'battles',
       description: {
-        icon: ':small_blue_diamond:',
-        content: 'Display Results',
+        icon: ':crown: ',
+        content: 'Manually ends voting, displays results, and ends the battle.',
         usage: '.results',
       },
     });

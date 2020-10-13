@@ -16,8 +16,8 @@ class SubmitCommand extends Command {
         },
       ],
       description: {
-        icon: ':small_blue_diamond:',
-        content: 'Submit your beat.',
+        icon: ':love_letter:',
+        content: 'Submits a link to the battle, soundcloud link preferred.',
 
         usage: '.submit [link]',
       },

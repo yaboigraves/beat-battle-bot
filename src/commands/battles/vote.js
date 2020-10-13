@@ -8,9 +8,9 @@ class VoteCommand extends Command {
       aliases: ['vote'],
       category: 'battles',
       description: {
-        icon: ':small_blue_diamond:',
-        content: 'Trigger the voting phase.',
-        usage: '.vote',
+        icon: ':ballot_box:',
+        content: 'Triggers the voting phase.',
+        usage: '.vote timeout:30',
       },
       args: [
         {
@@ -44,7 +44,7 @@ class VoteCommand extends Command {
 
       const votingEmbed = this.client.util.embed()
         .setColor('GOLD')
-        .setTitle(':ballot_box:  Voting Has Begun!')
+        .setTitle(':ballot_box: Voting Has Begun!')
         .setDescription(`React with 1️⃣,2️⃣,3️⃣,4️⃣,5️⃣ to vote.\nPlease wait until all numbers have been loaded.\nVoting will end in ${timeout} seconds`);
 
       message.channel.send(votingEmbed);

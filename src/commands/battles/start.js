@@ -7,8 +7,8 @@ class StartCommand extends Command {
       aliases: ['start'],
       category: 'battles',
       description: {
-        icon: ':small_blue_diamond:',
-        content: 'Start the battle!.',
+        icon: ':arrow_forward:',
+        content: 'Starts the battle.',
         usage: '.start',
       },
     });

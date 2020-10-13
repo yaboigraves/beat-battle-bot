@@ -7,8 +7,8 @@ class StopCommand extends Command {
       aliases: ['stop'],
       category: 'battles',
       description: {
-        icon: ':small_blue_diamond:',
-        content: 'Stop the current battle if their is one in this server.',
+        icon: ':octagonal_sign:',
+        content: 'Stops any current active battles in the server.',
         usage: '.stop',
       },
     });
