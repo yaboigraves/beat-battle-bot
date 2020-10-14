@@ -98,7 +98,12 @@ class BattleCommand extends Command {
 
       message.channel.send(reactEmbed).then((msg) => {
         msg.react('⚔️');
-        msg.awaitReactions(reactFilter, { time: timeout * 1000 }).then((collected) => {
+
+        const collector = msg.createReactionCollector(reactFilter, { time: timeout * 1000 });
+
+        // TODO: convert this to creating a collector rather than awaiting reactions
+        // so it can be stopped later if the .start command is run
+        collector.on('end', (collected) => {
         // nobody reacted
           if (!collected.first()) {
             const embed = this.client.util.embed()
