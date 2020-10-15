@@ -3,6 +3,7 @@
 const { Command, Argument } = require('discord-akairo');
 
 const YoutubeMp3Downloader = require('youtube-mp3-downloader');
+const fs = require('fs');
 const Battle = require('../../models/battle');
 
 class BattleCommand extends Command {
@@ -71,19 +72,25 @@ class BattleCommand extends Command {
 
     const videoid = sample.match(/(?:https?:\/{2})?(?:w{3}\.)?youtu(?:be)?\.(?:com|be)(?:\/watch\?v=|\/)([^\s&]+)/);
     if (videoid != null) {
-      console.log('video id = ', videoid[1]);
+      // console.log('video id = ', videoid[1]);
+      this.youtubeDownloader.download(videoid[1]);
+
+      this.youtubeDownloader.on('finished', (err, data) => {
+        // console.log(data.file);
+
+        // post the file in the server
+        message.channel.send('', { files: [data.file] }).then(() => {
+          // delete the file from the temp server
+          fs.unlink(data.file, (errr) => {
+            if (errr) {
+              console.error(errr);
+            }
+          });
+        });
+      });
     } else {
-      console.log('The youtube url is not valid.');
+      return message.channel.send('Invalid sample link, must be youtube link.');
     }
-
-    this.youtubeDownloader.download(videoid[1]);
-
-    this.youtubeDownloader.on('finished', (err, data) => {
-      console.log(data.file);
-
-      // post the file in the server
-      message.channel.send('Testing message.', { files: [data.file] });
-    });
 
     this.youtubeDownloader.on('error', (error) => {
       console.log(error);
