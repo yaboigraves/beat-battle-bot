@@ -262,7 +262,6 @@ class BattleCommand extends Command {
                           }
 
                           // update the db with the score
-
                           Battle.findOne({ serverID: message.guild.id, status: 'VOTING' }).then((serverBattle2) => {
                             const { submissionsScores } = serverBattle2;
                             submissionsScores[serverBattle2.playerIDs[i]] = voteSubmissionScore;
@@ -272,64 +271,6 @@ class BattleCommand extends Command {
                             });
                           });
                         });
-
-                        // voteReactionCollector.on('end', (reactCollected) => {
-                        //   // go through all the collected emojis and just print their name to start
-                        //   const reactions = reactCollected.array();
-                        //   // let submissionScore = 0;
-
-                        //   for (let j = 0; j < reactions.length; j += 1) {
-                        //     // console.log(reactions[j].emoji.name);
-
-                        //     // figure out what score is being given to the submission
-                        //     // update the db submission object with the score of that submission
-                        //     let voteSubmissionScore;
-                        //     switch (reactions[j].emoji.name) {
-                        //       case '1️⃣':
-                        //         // console.log('got 1 vote');
-                        //         submissionScore += 1;
-                        //         break;
-                        //       case '2️⃣':
-                        //         // console.log('got 2 vote');
-                        //         submissionScore += 2;
-                        //         break;
-                        //       case '3️⃣':
-                        //         // console.log('got 3 vote');
-                        //         submissionScore += 3;
-                        //         break;
-                        //       case '4️⃣':
-                        //         // console.log('got 4 vote');
-                        //         submissionScore += 4;
-                        //         break;
-                        //       case '5️⃣':
-                        //         // console.log('got 5 vote');
-                        //         submissionScore += 5;
-                        //         break;
-
-                        //       default:
-                        //         break;
-                        //     }
-
-                        //     // Battle.findOne({ serverID: message.guild.id, status: 'VOTING' }).then((serverBattle2) => {
-                        //     //   const { submissionsScores } = serverBattle2;
-                        //     //   submissionsScores[serverBattle2.playerIDs[i]] = submissionScore;
-
-                        //     //   Battle.updateOne({ serverID: message.guild.id, status: 'VOTING' }, { $set: { submissionsScores } }, () => {
-                        //     //     // this is a great callback
-                        //     //   });
-                        //     // });
-                        //   }
-
-                        //   // after we get all the scores for that dude update the submission score
-                        //   Battle.findOne({ serverID: message.guild.id, status: 'VOTING' }).then((serverBattle2) => {
-                        //     const { submissionsScores } = serverBattle2;
-                        //     submissionsScores[serverBattle2.playerIDs[i]] = submissionScore;
-
-                        //     Battle.updateOne({ serverID: message.guild.id, status: 'VOTING' }, { $set: { submissionsScores } }, () => {
-                        //       // this is a great callback
-                        //     });
-                        //   });
-                        // });
                       });
                   });
                 }
@@ -339,11 +280,9 @@ class BattleCommand extends Command {
             else if (currentStatus === 'RESULTS') {
               // db query for the battle because i think the reference is broken
               Battle.findOne({ serverID: message.guild.id, status: 'RESULTS' }).then((resultsBattle) => {
-                console.log('results listener detected');
-                console.log(voteReactionCollectors.length);
-
                 let winner;
-                // turn off the vote reaction collectors
+
+                // TODO: find a fix to turn off the message collectors otherwise these will explode the server
                 for (let i = 0; i < voteReactionCollectors.length; i += 1) {
                   console.log('stopping vote reaction collector');
                   voteReactionCollectors[i].stop();
@@ -388,6 +327,11 @@ class BattleCommand extends Command {
                   .setDescription(`:crown: The Winner is - <@${winner.id}>`);
 
                 message.channel.send(winnerEmbed);
+
+                // eslint-disable-next-line no-underscore-dangle
+                Battle.updateOne({ serverID: message.guild.id, status: 'RESULTS' }, { $set: { status: 'FINISHED' } }, () => {
+                  console.log('battle has ended');
+                });
               });
             }
           });
