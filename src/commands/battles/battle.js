@@ -332,7 +332,7 @@ class BattleCommand extends Command {
                 message.channel.send(winnerEmbed);
 
                 // eslint-disable-next-line no-underscore-dangle
-                Battle.updateOne({ serverID: message.guild.id, status: 'RESULTS' }, { $set: { status: 'FINISHED' } }, () => {
+                Battle.updateOne({ serverID: message.guild.id, status: 'RESULTS' }, { $set: { status: 'FINISHED', active: 'false' } }, () => {
                   console.log('battle has ended');
                 });
               });
