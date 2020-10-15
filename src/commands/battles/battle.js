@@ -340,7 +340,7 @@ class BattleCommand extends Command {
           });
 
           // add all the players to the db and set the state to battling
-          Battle.updateOne({ serverID: message.guild.id, status: 'PREPARING' }, { $set: { playerIDs: reactedIDs, status: 'BATTLING' } }, () => {
+          Battle.updateOne({ serverID: message.guild.id, status: 'PREPARING' }, { $set: { playerIDs: reactedIDs, status: 'BATTLING', date: +new Date() } }, () => {
             return message.channel.send(`The battle is starting! ${role}`);
           });
         });

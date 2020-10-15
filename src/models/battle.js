@@ -4,7 +4,8 @@ const battle = new mongoose.Schema({
   date: {
     type: Number,
     required: true,
-    default: +new Date(),
+    // default: +new Date(),
+    default: Date.now(),
   },
 
   serverID: {
