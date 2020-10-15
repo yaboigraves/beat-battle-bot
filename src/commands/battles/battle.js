@@ -151,6 +151,8 @@ class BattleCommand extends Command {
 
           const changeStream = Battle.watch();
 
+          const voteReactionCollectors = [];
+
           changeStream.on('change', (next) => {
             // console.log('received a change to the collection: \t', next);
 
@@ -159,7 +161,7 @@ class BattleCommand extends Command {
 
             let currentStatus = '';
 
-            const voteReactionCollectors = [];
+            // eslint-disable-next-line prefer-const
 
             const serverBattle = serverBattles;
 
@@ -227,6 +229,7 @@ class BattleCommand extends Command {
                         // eslint-disable-next-line max-len
                         const voteReactionCollector = voteMsg.createReactionCollector(filter, { time: 2700 * 1000 });
                         voteReactionCollectors.push(voteReactionCollector);
+                        console.log(voteReactionCollectors);
 
                         voteReactionCollector.on('collect', (reaction, user) => {
                           console.log(`Collected ${reaction.emoji.name} from ${user.tag}`);
@@ -282,9 +285,9 @@ class BattleCommand extends Command {
               Battle.findOne({ serverID: message.guild.id, status: 'RESULTS' }).then((resultsBattle) => {
                 let winner;
 
-                // TODO: find a fix to turn off the message collectors otherwise these will explode the server
+                console.log(voteReactionCollectors);
                 for (let i = 0; i < voteReactionCollectors.length; i += 1) {
-                  console.log('stopping vote reaction collector');
+                  // console.log('stopping vote reaction collector');
                   voteReactionCollectors[i].stop();
                 }
 
