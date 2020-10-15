@@ -67,6 +67,7 @@ const battle = new mongoose.Schema({
       'PREPARING', // waiting for users to join the battle
       'BATTLING', // battle in progress
       'VOTING', // voting in progress
+      'RESULTS', // results stage
       'FINISHED', // battle completed
     ],
   },

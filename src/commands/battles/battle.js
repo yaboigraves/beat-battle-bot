@@ -1,3 +1,5 @@
+/* eslint-disable max-len */
+/* eslint-disable brace-style */
 const { Command, Argument } = require('discord-akairo');
 
 const Battle = require('../../models/battle');
@@ -84,7 +86,7 @@ class BattleCommand extends Command {
 
       const battle = new Battle(battleOpts);
       battle.save().then((saved) => {
-        console.log(saved);
+        // console.log(saved);
       });
 
       const reactFilter = (reaction, user) => {
@@ -157,6 +159,10 @@ class BattleCommand extends Command {
 
             let currentStatus = '';
 
+            const voteReactionCollectors = [];
+
+            const serverBattle = serverBattles;
+
             if (next.operationType === 'replace') {
               // console.log('replace operation');
               currentStatus = next.fullDocument.status;
@@ -172,34 +178,217 @@ class BattleCommand extends Command {
             // TODO: package this listener code up into some kind of object and then import it
             // rather than having all this code here
 
-            switch (currentStatus) {
-              case 'PREPARING':
-                console.log('preparing found');
-                break;
-              case 'BATTLING':
-                // TODO: if we're moving into the battle state, check if the reaction collector is
-                // still running, if it is still running, then we turn it off
+            if (currentStatus === 'PREPARING') {
+              console.log('preparing found');
+            }
+            else if (currentStatus === 'BATTLING') {
+              setTimeout(() => {
+                Battle.updateOne({ serverID: message.guild.id, status: 'BATTLING' }, { $set: { playerIDs: reactedIDs, status: 'VOTING' } }, () => {
+                  return message.channel.send(`Battles over!! ${role}`);
+                });
+              }, time * 1000);
+            }
+            else if (currentStatus === 'VOTING') {
+              // when voting is switched to we need to create a timeout that waits voting timeout
+              // no point in really timing this so we're just gonna make it one hour for now
+              // the collector will continously collect until the finished command is recieved
+              // the voting collector will need to be declared before the ifelse block so it can be
+              // accessed in the finished condtional
 
-                setTimeout(() => {
-                  Battle.updateOne({ serverID: message.guild.id, status: 'BATTLING' }, { $set: { playerIDs: reactedIDs, status: 'VOTING' } }, () => {
-                    return message.channel.send(`Battles over!! ${role}`);
+              const filter = (reaction, user) => {
+                return ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣'].includes(reaction.emoji.name) && user.id !== this.client.user.id;
+              };
+
+              const votingEmbed = this.client.util.embed()
+                .setColor('GOLD')
+                .setTitle(':ballot_box: Voting Has Begun!')
+                .setDescription('React with 1️⃣,2️⃣,3️⃣,4️⃣,5️⃣ to vote.\nPlease wait until all numbers have been loaded.\nVoting will end automatically in 45 minutes.');
+
+              message.channel.send(votingEmbed);
+
+              Battle.findOne({ serverID: message.guild.id, status: 'VOTING' }).then((battleResults) => {
+                if (battleResults === null) {
+                  return message.channel.send('No battle in the voting phase.');
+                }
+
+                for (let i = 0; i < battleResults.playerIDs.length; i += 1) {
+                  const voteReactEmbed = this.client.util.embed()
+                    .setColor('GOLD')
+                    .setTitle(`:crossed_swords: ${battleResults.submissions[battleResults.playerIDs[i]]}`);
+
+                  message.channel.send(voteReactEmbed).then((voteMsg) => {
+                    const submissionScore = 0;
+                    voteMsg.react('1️⃣')
+                      .then(() => voteMsg.react('2️⃣'))
+                      .then(() => voteMsg.react('3️⃣'))
+                      .then(() => voteMsg.react('4️⃣'))
+                      .then(() => voteMsg.react('5️⃣'))
+                      .then(() => {
+                        // eslint-disable-next-line max-len
+                        const voteReactionCollector = voteMsg.createReactionCollector(filter, { time: 2700 * 1000 });
+                        voteReactionCollectors.push(voteReactionCollector);
+
+                        voteReactionCollector.on('collect', (reaction, user) => {
+                          console.log(`Collected ${reaction.emoji.name} from ${user.tag}`);
+
+                          // update the database dynamically rather than all at the end
+                          // -Billy
+
+                          let voteSubmissionScore = 0;
+
+                          switch (reaction.emoji.name) {
+                            case '1️⃣':
+                              // console.log('got 1 vote');
+                              voteSubmissionScore = 1;
+                              break;
+                            case '2️⃣':
+                              // console.log('got 2 vote');
+                              voteSubmissionScore = 2;
+                              break;
+                            case '3️⃣':
+                              // console.log('got 3 vote');
+                              voteSubmissionScore = 3;
+                              break;
+                            case '4️⃣':
+                              // console.log('got 4 vote');
+                              voteSubmissionScore = 4;
+                              break;
+                            case '5️⃣':
+                              // console.log('got 5 vote');
+                              voteSubmissionScore = 5;
+                              break;
+                            default:
+                              break;
+                          }
+
+                          // update the db with the score
+
+                          Battle.findOne({ serverID: message.guild.id, status: 'VOTING' }).then((serverBattle2) => {
+                            const { submissionsScores } = serverBattle2;
+                            submissionsScores[serverBattle2.playerIDs[i]] = voteSubmissionScore;
+
+                            Battle.updateOne({ serverID: message.guild.id, status: 'VOTING' }, { $set: { submissionsScores } }, () => {
+                              // this is a great callback
+                            });
+                          });
+                        });
+
+                        // voteReactionCollector.on('end', (reactCollected) => {
+                        //   // go through all the collected emojis and just print their name to start
+                        //   const reactions = reactCollected.array();
+                        //   // let submissionScore = 0;
+
+                        //   for (let j = 0; j < reactions.length; j += 1) {
+                        //     // console.log(reactions[j].emoji.name);
+
+                        //     // figure out what score is being given to the submission
+                        //     // update the db submission object with the score of that submission
+                        //     let voteSubmissionScore;
+                        //     switch (reactions[j].emoji.name) {
+                        //       case '1️⃣':
+                        //         // console.log('got 1 vote');
+                        //         submissionScore += 1;
+                        //         break;
+                        //       case '2️⃣':
+                        //         // console.log('got 2 vote');
+                        //         submissionScore += 2;
+                        //         break;
+                        //       case '3️⃣':
+                        //         // console.log('got 3 vote');
+                        //         submissionScore += 3;
+                        //         break;
+                        //       case '4️⃣':
+                        //         // console.log('got 4 vote');
+                        //         submissionScore += 4;
+                        //         break;
+                        //       case '5️⃣':
+                        //         // console.log('got 5 vote');
+                        //         submissionScore += 5;
+                        //         break;
+
+                        //       default:
+                        //         break;
+                        //     }
+
+                        //     // Battle.findOne({ serverID: message.guild.id, status: 'VOTING' }).then((serverBattle2) => {
+                        //     //   const { submissionsScores } = serverBattle2;
+                        //     //   submissionsScores[serverBattle2.playerIDs[i]] = submissionScore;
+
+                        //     //   Battle.updateOne({ serverID: message.guild.id, status: 'VOTING' }, { $set: { submissionsScores } }, () => {
+                        //     //     // this is a great callback
+                        //     //   });
+                        //     // });
+                        //   }
+
+                        //   // after we get all the scores for that dude update the submission score
+                        //   Battle.findOne({ serverID: message.guild.id, status: 'VOTING' }).then((serverBattle2) => {
+                        //     const { submissionsScores } = serverBattle2;
+                        //     submissionsScores[serverBattle2.playerIDs[i]] = submissionScore;
+
+                        //     Battle.updateOne({ serverID: message.guild.id, status: 'VOTING' }, { $set: { submissionsScores } }, () => {
+                        //       // this is a great callback
+                        //     });
+                        //   });
+                        // });
+                      });
                   });
-                }, time * 1000);
-                break;
-              case 'VOTING':
-                // if we're switching to voting then we start a timer? just wait for voting phase
-                console.log('voting phase activated');
-                break;
+                }
+              });
+            }
 
-              case 'FINISHED':
-                // end the battle, take away participant roles, update leaderboards
+            else if (currentStatus === 'RESULTS') {
+              // db query for the battle because i think the reference is broken
+              Battle.findOne({ serverID: message.guild.id, status: 'RESULTS' }).then((resultsBattle) => {
+                console.log('results listener detected');
+                console.log(voteReactionCollectors.length);
 
-                // first calculate who won
+                let winner;
+                // turn off the vote reaction collectors
+                for (let i = 0; i < voteReactionCollectors.length; i += 1) {
+                  console.log('stopping vote reaction collector');
+                  voteReactionCollectors[i].stop();
+                }
 
-                break;
+                winner = {
+                  id: resultsBattle.playerIDs[0],
+                  submissionLink: '',
+                  score: 0,
+                };
 
-              default:
-                break;
+                // loop through all the player ids
+                for (let i = 0; i < resultsBattle.playerIDs.length; i += 1) {
+                  const { submissionsScores } = resultsBattle;
+
+                  const score = submissionsScores[resultsBattle.playerIDs[i]];
+
+                  const resultEmbed = this.client.util.embed()
+                    .setColor('BLUE')
+                    .setTitle(` ${resultsBattle.submissions[resultsBattle.playerIDs[i]]}`)
+                    .setDescription(`Submitted By : <@${resultsBattle.playerIDs[i]}> \n Score : ${score}`);
+
+                  // todo: only post the top three at the end maybe?
+                  message.channel.send(resultEmbed);
+
+                  // check if the score is larger than the current winners score
+
+                  if (winner.score < score) {
+                    winner.id = resultsBattle.playerIDs[i];
+                    winner.submissionLink = resultsBattle.submissions[winner.id];
+                    winner.score = score;
+                  }
+
+                  // while we're at it and looping thru player id's remove their participant role
+                  message.guild.members.cache.get(resultsBattle.playerIDs[i]).roles.remove(role);
+                }
+
+                // after the await, we then display the winner and then update leaderboards
+                const winnerEmbed = this.client.util.embed()
+                  .setColor('GOLD')
+                  .setTitle(`:fire: ${winner.submissionLink}\nScore : ${winner.score}`)
+                  .setDescription(`:crown: The Winner is - <@${winner.id}>`);
+
+                message.channel.send(winnerEmbed);
+              });
             }
           });
 
