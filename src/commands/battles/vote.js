@@ -29,12 +29,6 @@ class VoteCommand extends Command {
   }
 
   async exec(message, { timeout }) {
-    // let serverBattle;
-
-    // const filter = (reaction, user) => {
-    //   return ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣'].includes(reaction.emoji.name) && user.id !== this.client.user.id;
-    // };
-
     await Battle.findOne({ serverID: message.guild.id, status: 'VOTING' }).then((battleResults) => {
       if (battleResults === null) {
         return message.channel.send('No battle in the voting phase.');
