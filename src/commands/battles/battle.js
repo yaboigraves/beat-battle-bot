@@ -2,6 +2,8 @@
 /* eslint-disable brace-style */
 const { Command, Argument } = require('discord-akairo');
 
+const YoutubeMp3Downloader = require('youtube-mp3-downloader');
+const fs = require('fs');
 const Battle = require('../../models/battle');
 
 class BattleCommand extends Command {
@@ -44,6 +46,17 @@ class BattleCommand extends Command {
         usage: '.battle [sample] length:30 timeout:10',
       },
     });
+
+    // config for youtube downloader
+    this.youtubeDownloader = new YoutubeMp3Downloader({
+      // TODO: move this to env
+      ffmpegPath: 'C:/Program Files/ffmpeg/bin/ffmpeg.exe', // FFmpeg binary location
+      outputPath: './src/tempFiles', // Output file location (default: the home directory)
+      youtubeVideoQuality: 'highestaudio', // Desired video quality (default: highestaudio)
+      queueParallelism: 2, // Download parallelism (default: 1)
+      progressTimeout: 2000, // Interval in ms for the progress reports (default: 1000)
+      allowWebm: false, // Enable download from WebM sources (default: false)
+    });
   }
 
   async exec(message, { sample, time, timeout }) {
@@ -56,6 +69,32 @@ class BattleCommand extends Command {
 
       return message.channel.send(embed);
     }
+
+    const videoid = sample.match(/(?:https?:\/{2})?(?:w{3}\.)?youtu(?:be)?\.(?:com|be)(?:\/watch\?v=|\/)([^\s&]+)/);
+    if (videoid != null) {
+      // console.log('video id = ', videoid[1]);
+      this.youtubeDownloader.download(videoid[1]);
+
+      this.youtubeDownloader.on('finished', (err, data) => {
+        // console.log(data.file);
+
+        // post the file in the server
+        message.channel.send('', { files: [data.file] }).then(() => {
+          // delete the file from the temp server
+          fs.unlink(data.file, (errr) => {
+            if (errr) {
+              console.error(errr);
+            }
+          });
+        });
+      });
+    } else {
+      return message.channel.send('Invalid sample link, must be youtube link.');
+    }
+
+    this.youtubeDownloader.on('error', (error) => {
+      console.log(error);
+    });
 
     // battle in progress
     Battle.find({ serverID: message.guild.id }).then((serverBattles) => {
