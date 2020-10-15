@@ -16,7 +16,7 @@ class BattleCommand extends Command {
           // 10 minutes to 4 hours
           // todo: inhibitor for incorrect argument
           id: 'time',
-          type: Argument.range('number', 10, 240),
+          type: Argument.range('number', 10, 10000),
           default: '30',
           match: 'option',
           flag: 'length:',
@@ -25,8 +25,8 @@ class BattleCommand extends Command {
           // time in minutes to watch for reactions
           // 1 to 15 minutes
           id: 'timeout',
-          type: Argument.range('number', 1, 60),
-          default: 30, // temporary, in seconds
+          type: Argument.range('number', 1, 500),
+          default: '30', // temporary, in seconds
           match: 'option',
           flag: 'timeout:',
         },
@@ -165,12 +165,20 @@ class BattleCommand extends Command {
               currentStatus = next.updateDescription.updatedFields.status;
             }
 
-            console.log(currentStatus);
+            // console.log(currentStatus);
+
+            // TODO: move all timing events and state switching code into this listener
+
+            // TODO: package this listener code up into some kind of object and then import it
+            // rather than having all this code here
 
             switch (currentStatus) {
+              case 'PREPARING':
+                console.log('preparing found');
+                break;
               case 'BATTLING':
-                // if we're switching into a battle then the battle timer needs to be setup
-                // after that timer is up we mention all users in the battle then switch to voting
+                // TODO: if we're moving into the battle state, check if the reaction collector is
+                // still running, if it is still running, then we turn it off
 
                 setTimeout(() => {
                   Battle.updateOne({ serverID: message.guild.id, status: 'BATTLING' }, { $set: { playerIDs: reactedIDs, status: 'VOTING' } }, () => {
@@ -185,6 +193,9 @@ class BattleCommand extends Command {
 
               case 'FINISHED':
                 // end the battle, take away participant roles, update leaderboards
+
+                // first calculate who won
+
                 break;
 
               default:

@@ -29,6 +29,8 @@ class ResultsCommand extends Command {
         return message.channel.send('No battle ready for results yet');
       }
 
+      // turn off the vote reaction collectors
+
       winner = {
         id: serverBattle.playerIDs[0],
         submissionLink: '',

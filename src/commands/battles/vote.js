@@ -18,7 +18,8 @@ class VoteCommand extends Command {
           // 1 to 15 minutes
           id: 'timeout',
           type: Argument.range('number', 1, 60),
-          default: 30, // temporary, in seconds
+          // 10 minutes by default
+          default: 600, // temporary, in seconds
           match: 'option',
           flag: 'timeout:',
         },
@@ -105,6 +106,9 @@ class VoteCommand extends Command {
                 // note, this is happening multiple times because their is one collector
                 // for every submission
                 // this should be handled by some kind of timer listener later
+
+                // TODO: move this to the listener, and create a serpearte timeout that
+                // waits the same amount of time the reaction collector waits
 
                 Battle.findOne({ serverID: message.guild.id, status: 'VOTING' }).then((serverBattle2) => {
                   const { submissionsScores } = serverBattle2;

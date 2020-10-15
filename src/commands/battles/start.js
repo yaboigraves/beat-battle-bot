@@ -1,6 +1,12 @@
 const { Command } = require('discord-akairo');
 const Battle = require('../../models/battle');
 
+/*
+  start command may need to be removed for now
+  it provides some weird problems with storing references to the collector
+
+*/
+
 class StartCommand extends Command {
   constructor() {
     super('start', {
