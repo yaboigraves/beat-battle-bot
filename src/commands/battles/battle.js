@@ -240,22 +240,35 @@ class BattleCommand extends Command {
                 return ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣'].includes(reaction.emoji.name) && user.id !== this.client.user.id;
               };
 
-              const votingEmbed = this.client.util.embed()
-                .setColor('GOLD')
-                .setTitle(':ballot_box: Voting Has Begun!')
-                .setDescription('React with 1️⃣,2️⃣,3️⃣,4️⃣,5️⃣ to vote.\nPlease wait until all numbers have been loaded.\nVoting will end automatically in 45 minutes.');
-
-              message.channel.send(votingEmbed);
-
               Battle.findOne({ serverID: message.guild.id, status: 'VOTING' }).then((battleResults) => {
                 if (battleResults === null) {
                   return message.channel.send('No battle in the voting phase.');
                 }
 
+                // check for no submissions
+                if (Object.keys(battleResults.submissions).length === 0) {
+                  return message.channel.send('No one submitted, ending battle');
+                }
+
+                const votingEmbed = this.client.util.embed()
+                  .setColor('GOLD')
+                  .setTitle(':ballot_box: Voting Has Begun!')
+                  .setDescription('React with 1️⃣,2️⃣,3️⃣,4️⃣,5️⃣ to vote.\nPlease wait until all numbers have been loaded.\nVoting will end automatically in 45 minutes.');
+
+                message.channel.send(votingEmbed);
+
                 for (let i = 0; i < battleResults.playerIDs.length; i += 1) {
+                  if (battleResults.submissions[battleResults.playerIDs[i]] === undefined) {
+                    const noSubmissionEmbed = this.client.util.embed().setColor('RED')
+                      .setTitle('No Submission')
+                      .setDescription(`From <@${battleResults.playerIDs[i]}`);
+                    return message.channel.send(noSubmissionEmbed);
+                  }
+
                   const voteReactEmbed = this.client.util.embed()
                     .setColor('GOLD')
-                    .setTitle(`:crossed_swords: ${battleResults.submissions[battleResults.playerIDs[i]]}`);
+                    .setTitle(`:crossed_swords: ${battleResults.submissions[battleResults.playerIDs[i]]}`)
+                    .setDescription(`Submitted By <@${battleResults.playerIDs[i]}>`);
 
                   message.channel.send(voteReactEmbed).then((voteMsg) => {
                     const submissionScore = 0;
