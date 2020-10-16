@@ -22,21 +22,20 @@ class YtDownloadCommand extends Command {
         },
       ],
     });
-
-    this.youtubeDownloader = new YoutubeMp3Downloader({
-      // TODO: move this to env
-      ffmpegPath: 'C:/Program Files/ffmpeg/bin/ffmpeg.exe', // FFmpeg binary location
-      outputPath: './src/tempFiles', // Output file location (default: the home directory)
-      youtubeVideoQuality: 'highestaudio', // Desired video quality (default: highestaudio)
-      queueParallelism: 2, // Download parallelism (default: 1)
-      progressTimeout: 2000, // Interval in ms for the progress reports (default: 1000)
-      allowWebm: false, // Enable download from WebM sources (default: false)
-    });
   }
 
   async exec(message, { sample }) {
     const videoid = sample.match(/(?:https?:\/{2})?(?:w{3}\.)?youtu(?:be)?\.(?:com|be)(?:\/watch\?v=|\/)([^\s&]+)/);
     if (videoid != null) {
+      this.youtubeDownloader = new YoutubeMp3Downloader({
+        // TODO: move this to env
+        ffmpegPath: 'C:/Program Files/ffmpeg/bin/ffmpeg.exe', // FFmpeg binary location
+        outputPath: './src/tempFiles', // Output file location (default: the home directory)
+        youtubeVideoQuality: 'highestaudio', // Desired video quality (default: highestaudio)
+        queueParallelism: 2, // Download parallelism (default: 1)
+        progressTimeout: 2000, // Interval in ms for the progress reports (default: 1000)
+        allowWebm: false, // Enable download from WebM sources (default: false)
+      });
       this.youtubeDownloader.download(videoid[1]);
 
       this.youtubeDownloader.on('finished', (err, data) => {

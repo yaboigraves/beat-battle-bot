@@ -212,16 +212,13 @@ class BattleCommand extends Command {
               currentStatus = next.updateDescription.updatedFields.status;
             }
 
-            // console.log(currentStatus);
-
-            // TODO: move all timing events and state switching code into this listener
-
             // TODO: package this listener code up into some kind of object and then import it
             // rather than having all this code here
 
             if (currentStatus === 'PREPARING') {
               console.log('preparing found');
             }
+
             else if (currentStatus === 'BATTLING') {
               setTimeout(() => {
                 Battle.updateOne({ serverID: message.guild.id, status: 'BATTLING' }, { $set: { playerIDs: reactedIDs, status: 'VOTING' } }, () => {
