@@ -20,7 +20,7 @@ class BattleCommand extends Command {
           // 10 minutes to 4 hours
           // todo: inhibitor for incorrect argument
           id: 'time',
-          type: Argument.range('number', 10, 10000),
+          type: Argument.range('number', 3, 10000),
           default: '30',
           match: 'option',
           flag: 'length:',
@@ -268,13 +268,22 @@ class BattleCommand extends Command {
                         // eslint-disable-next-line max-len
                         const voteReactionCollector = voteMsg.createReactionCollector(filter, { time: 2700 * 1000 });
                         voteReactionCollectors.push(voteReactionCollector);
-                        console.log(voteReactionCollectors);
+
+                        // tracks the number of reactions
+                        let numReactions = 0;
+                        // tracks the user's that have already voted
+                        const usersReacted = [];
+                        let score = 0;
 
                         voteReactionCollector.on('collect', (reaction, user) => {
-                          console.log(`Collected ${reaction.emoji.name} from ${user.tag}`);
-
-                          // update the database dynamically rather than all at the end
-                          // -Billy
+                          // console.log(`Collected ${reaction.emoji.name} from ${user.tag}`);
+                          if (!usersReacted.includes(user.id)) {
+                            numReactions += 1;
+                            usersReacted.push(user.id);
+                          }
+                          else {
+                            return voteMsg.channel.send(`Vote already recieved <@${user.id}>`);
+                          }
 
                           let voteSubmissionScore = 0;
 
@@ -302,6 +311,9 @@ class BattleCommand extends Command {
                             default:
                               break;
                           }
+
+                          score += voteSubmissionScore;
+                          voteMsg.edit(voteReactEmbed.setDescription(`${numReactions}/${battleResults.playerIDs.length} votes recieved. \n Current Score : ${score} `));
 
                           // update the db with the score
                           Battle.findOne({ serverID: message.guild.id, status: 'VOTING' }).then((serverBattle2) => {
