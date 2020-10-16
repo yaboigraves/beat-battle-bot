@@ -1,10 +1,24 @@
+/* eslint-disable no-underscore-dangle */
 /* eslint-disable max-len */
 /* eslint-disable brace-style */
 const { Command, Argument } = require('discord-akairo');
 
 const YoutubeMp3Downloader = require('youtube-mp3-downloader');
 const fs = require('fs');
+const { ObjectId } = require('mongodb');
+const { measureMemory } = require('vm');
 const Battle = require('../../models/battle');
+
+// config for youtube downloader
+const youtubeDownloader = new YoutubeMp3Downloader({
+  // TODO: move this to env
+  ffmpegPath: 'C:/Program Files/ffmpeg/bin/ffmpeg.exe', // FFmpeg binary location
+  outputPath: './src/tempFiles', // Output file location (default: the home directory)
+  youtubeVideoQuality: 'highestaudio', // Desired video quality (default: highestaudio)
+  queueParallelism: 2, // Download parallelism (default: 1)
+  progressTimeout: 2000, // Interval in ms for the progress reports (default: 1000)
+  allowWebm: false, // Enable download from WebM sources (default: false)
+});
 
 class BattleCommand extends Command {
   constructor() {
@@ -46,17 +60,6 @@ class BattleCommand extends Command {
         usage: '.battle [sample] length:30 timeout:10',
       },
     });
-
-    // config for youtube downloader
-    this.youtubeDownloader = new YoutubeMp3Downloader({
-      // TODO: move this to env
-      ffmpegPath: 'C:/Program Files/ffmpeg/bin/ffmpeg.exe', // FFmpeg binary location
-      outputPath: './src/tempFiles', // Output file location (default: the home directory)
-      youtubeVideoQuality: 'highestaudio', // Desired video quality (default: highestaudio)
-      queueParallelism: 2, // Download parallelism (default: 1)
-      progressTimeout: 2000, // Interval in ms for the progress reports (default: 1000)
-      allowWebm: false, // Enable download from WebM sources (default: false)
-    });
   }
 
   async exec(message, { sample, time, timeout }) {
@@ -73,9 +76,9 @@ class BattleCommand extends Command {
     const videoid = sample.match(/(?:https?:\/{2})?(?:w{3}\.)?youtu(?:be)?\.(?:com|be)(?:\/watch\?v=|\/)([^\s&]+)/);
     if (videoid != null) {
       // console.log('video id = ', videoid[1]);
-      this.youtubeDownloader.download(videoid[1]);
+      youtubeDownloader.download(videoid[1]);
 
-      this.youtubeDownloader.on('finished', (err, data) => {
+      youtubeDownloader.on('finished', (err, data) => {
         // console.log(data.file);
 
         // post the file in the server
@@ -92,7 +95,7 @@ class BattleCommand extends Command {
       return message.channel.send('Invalid sample link, must be youtube link.');
     }
 
-    this.youtubeDownloader.on('error', (error) => {
+    youtubeDownloader.on('error', (error) => {
       console.log(error);
     });
 
@@ -188,12 +191,47 @@ class BattleCommand extends Command {
 
           // cant do this on a testing db, need to move it to replica
 
-          const changeStream = Battle.watch();
+          // why tf doesnt this work?
+          // const pipeline = [{
+          //   $match: { 'documentKey._id': message.guild.id },
+          // },
+          // ];
+          const options = { fullDocument: 'updateLookup' };
+
+          const changeStream = Battle.watch(options);
 
           const voteReactionCollectors = [];
 
           changeStream.on('change', (next) => {
-            // console.log('received a change to the collection: \t', next);
+            console.log('received a change to the collection: \t', next.fullDocument.serverID);
+
+            /*
+              so to summarize the problem
+              -this listener runs anytime ANY document in the collection is changed
+              -this means that anytime any battle runs, the listener will update ALL servers with the changes
+                -this is obviously a no no
+
+              -so we need to make sure that each listener for each server only responds to changes to ITS battle document
+              -for some reason this is fucking impossible????
+                -probably needs something with a pipeline? we need to only allow events where the document
+                id matches the server id
+                  -HOWEVER for some fucking reason the serverid and the message id are different ids? despite being
+                  in the same server?????
+            */
+
+            // TODO: FOR NOW THIS IS A SHITTY FIX, CHECK IF THE UPDATE IS RELEVANT TO THIS CURRENT SERVER
+            // WHY TF DOESNT THIS WORK??
+            // ids are different all of a sudden???
+
+            // Battle.findById(new ObjectId(next.documentKey._id), (bttle) => {
+            //   console.log(bttle);
+            // });
+
+            // why the fuck are these id's different
+            // Battle.findOne({ serverID: message.guild.id }, (b) => {
+            //   console.log(b);
+            //   console.log(message.guild.id);
+            // });
 
             // first check the operation type, because for some fucking
             // reason the same info is stored differently
