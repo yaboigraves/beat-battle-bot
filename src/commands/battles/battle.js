@@ -203,7 +203,7 @@ class BattleCommand extends Command {
           const voteReactionCollectors = [];
 
           changeStream.on('change', (next) => {
-            console.log('received a change to the collection: \t', next.fullDocument.serverID);
+            console.log('received a change to the collection: \t', next);
 
             /*
               so to summarize the problem
@@ -433,6 +433,7 @@ class BattleCommand extends Command {
                 // eslint-disable-next-line no-underscore-dangle
                 Battle.updateOne({ serverID: message.guild.id, status: 'RESULTS' }, { $set: { status: 'FINISHED', active: 'false' } }, () => {
                   console.log('battle has ended');
+                  changeStream.close();
                 });
               });
             }
