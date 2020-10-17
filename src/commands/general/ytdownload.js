@@ -1,7 +1,8 @@
 const { Command } = require('discord-akairo');
-
-const YoutubeMp3Downloader = require('youtube-mp3-downloader');
 const fs = require('fs');
+const Downloader = require('../../ytdownloader');
+
+const dl = new Downloader();
 
 class YtDownloadCommand extends Command {
   constructor() {
@@ -13,7 +14,6 @@ class YtDownloadCommand extends Command {
         content: 'Download and repost audio from a youtube link.',
         usage: '.ytDownload [link]',
       },
-
       args: [
         {
           id: 'sample',
@@ -22,43 +22,28 @@ class YtDownloadCommand extends Command {
         },
       ],
     });
-
-    this.youtubeDownloader = new YoutubeMp3Downloader({
-      // TODO: move this to env
-      ffmpegPath: 'C:/Program Files/ffmpeg/bin/ffmpeg.exe', // FFmpeg binary location
-      outputPath: './src/tempFiles', // Output file location (default: the home directory)
-      youtubeVideoQuality: 'highestaudio', // Desired video quality (default: highestaudio)
-      queueParallelism: 2, // Download parallelism (default: 1)
-      progressTimeout: 2000, // Interval in ms for the progress reports (default: 1000)
-      allowWebm: false, // Enable download from WebM sources (default: false)
-    });
   }
 
   async exec(message, { sample }) {
     const videoid = sample.match(/(?:https?:\/{2})?(?:w{3}\.)?youtu(?:be)?\.(?:com|be)(?:\/watch\?v=|\/)([^\s&]+)/);
+
     if (videoid != null) {
-      this.youtubeDownloader.download(videoid[1]);
-
-      this.youtubeDownloader.on('finished', (err, data) => {
-        // console.log(data.file);
-
-        // post the file in the server
-        message.channel.send('', { files: [data.file] }).then(() => {
-          // delete the file from the temp server
-          fs.unlink(data.file, (errr) => {
-            if (errr) {
-              console.error(errr);
-            }
+      dl.getMP3({ videoId: videoid[1] }, (err, res) => {
+        if (err) {
+          throw err;
+        } else {
+          message.channel.send('', { files: [res.file] }).then(() => {
+            fs.unlink(res.file, (errr) => {
+              if (errr) {
+                throw (errr);
+              }
+            });
           });
-        });
+        }
       });
     } else {
       return message.channel.send('Invalid sample link, must be youtube link.');
     }
-
-    this.youtubeDownloader.on('error', (error) => {
-      console.log(error);
-    });
   }
 }
 

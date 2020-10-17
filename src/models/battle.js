@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
 const battle = new mongoose.Schema({
+
   date: {
     type: Number,
     required: true,
