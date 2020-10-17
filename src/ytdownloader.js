@@ -5,7 +5,7 @@ const Downloader = function () {
 
   // Configure YoutubeMp3Downloader with your settings
   self.YD = new YoutubeMp3Downloader({
-    ffmpegPath: 'C:/Program Files/ffmpeg/bin/ffmpeg.exe', // FFmpeg binary location
+    ffmpegPath: process.env.FFPATH || '/usr/local/bin/ffmpeg', // FFmpeg binary location
     outputPath: './samples', // Output file location (default: the home directory)
     youtubeVideoQuality: 'highestaudio', // Desired video quality (default: highestaudio)
     queueParallelism: 2, // Download parallelism (default: 1)
