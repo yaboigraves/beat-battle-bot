@@ -1,9 +1,8 @@
 const { Command } = require('discord-akairo');
+const fs = require('fs');
 const Downloader = require('../../ytdownloader');
 
 const dl = new Downloader();
-
-const fs = require('fs');
 
 class YtDownloadCommand extends Command {
   constructor() {
@@ -15,7 +14,6 @@ class YtDownloadCommand extends Command {
         content: 'Download and repost audio from a youtube link.',
         usage: '.ytDownload [link]',
       },
-
       args: [
         {
           id: 'sample',
@@ -27,9 +25,8 @@ class YtDownloadCommand extends Command {
   }
 
   async exec(message, { sample }) {
-    console.log(sample);
     const videoid = sample.match(/(?:https?:\/{2})?(?:w{3}\.)?youtu(?:be)?\.(?:com|be)(?:\/watch\?v=|\/)([^\s&]+)/);
-    console.log(videoid[1]);
+
     if (videoid != null) {
       dl.getMP3({ videoId: videoid[1] }, (err, res) => {
         if (err) {
@@ -38,7 +35,7 @@ class YtDownloadCommand extends Command {
           message.channel.send('', { files: [res.file] }).then(() => {
             fs.unlink(res.file, (errr) => {
               if (errr) {
-                console.error(errr);
+                throw (errr);
               }
             });
           });

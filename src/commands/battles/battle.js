@@ -3,22 +3,13 @@
 /* eslint-disable brace-style */
 const { Command, Argument } = require('discord-akairo');
 
-const YoutubeMp3Downloader = require('youtube-mp3-downloader');
 const fs = require('fs');
-const { ObjectId } = require('mongodb');
-const { measureMemory } = require('vm');
+// const { ObjectId } = require('mongodb');
 const Battle = require('../../models/battle');
 
-// config for youtube downloader
-const youtubeDownloader = new YoutubeMp3Downloader({
-  // TODO: move this to env
-  ffmpegPath: 'C:/Program Files/ffmpeg/bin/ffmpeg.exe', // FFmpeg binary location
-  outputPath: './src/tempFiles', // Output file location (default: the home directory)
-  youtubeVideoQuality: 'highestaudio', // Desired video quality (default: highestaudio)
-  queueParallelism: 2, // Download parallelism (default: 1)
-  progressTimeout: 2000, // Interval in ms for the progress reports (default: 1000)
-  allowWebm: false, // Enable download from WebM sources (default: false)
-});
+const Downloader = require('../../ytdownloader');
+
+const dl = new Downloader();
 
 class BattleCommand extends Command {
   constructor() {
@@ -75,29 +66,22 @@ class BattleCommand extends Command {
 
     const videoid = sample.match(/(?:https?:\/{2})?(?:w{3}\.)?youtu(?:be)?\.(?:com|be)(?:\/watch\?v=|\/)([^\s&]+)/);
     if (videoid != null) {
-      // console.log('video id = ', videoid[1]);
-      youtubeDownloader.download(videoid[1]);
-
-      youtubeDownloader.on('finished', (err, data) => {
-        // console.log(data.file);
-
-        // post the file in the server
-        message.channel.send('', { files: [data.file] }).then(() => {
-          // delete the file from the temp server
-          fs.unlink(data.file, (errr) => {
-            if (errr) {
-              console.error(errr);
-            }
+      dl.getMP3({ videoId: videoid[1] }, (err, res) => {
+        if (err) {
+          throw err;
+        } else {
+          message.channel.send('', { files: [res.file] }).then(() => {
+            fs.unlink(res.file, (errr) => {
+              if (errr) {
+                throw (errr);
+              }
+            });
           });
-        });
+        }
       });
     } else {
       return message.channel.send('Invalid sample link, must be youtube link.');
     }
-
-    youtubeDownloader.on('error', (error) => {
-      console.log(error);
-    });
 
     // battle in progress
     Battle.find({ serverID: message.guild.id }).then((serverBattles) => {
@@ -145,8 +129,6 @@ class BattleCommand extends Command {
 
         const collector = msg.createReactionCollector(reactFilter, { time: timeout * 1000 });
 
-        // TODO: convert this to creating a collector rather than awaiting reactions
-        // so it can be stopped later if the .start command is run
         collector.on('end', (collected) => {
         // nobody reacted
           if (!collected.first()) {
@@ -203,7 +185,9 @@ class BattleCommand extends Command {
           const voteReactionCollectors = [];
 
           changeStream.on('change', (next) => {
-            console.log('received a change to the collection: \t', next);
+            console.log('change stream change thang for');
+            console.log(next.documentKey);
+            // console.log('received a change to the collection: \t', next);
 
             /*
               so to summarize the problem
@@ -283,6 +267,8 @@ class BattleCommand extends Command {
                 // check for no submissions
                 if (Object.keys(battleResults.submissions).length === 0) {
                   return message.channel.send('No one submitted, ending battle');
+
+                  // TODO: remove the battle from the db
                 }
 
                 const votingEmbed = this.client.util.embed()

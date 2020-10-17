@@ -27,6 +27,10 @@ class SubmitCommand extends Command {
   async exec(message, { link }) {
     // check if there's a battle running in the current server that the user is a participant in
     await Battle.findOne({ serverID: message.guild.id, status: 'BATTLING' }).then((serverBattle) => {
+      if (serverBattle === null) {
+        return message.channel.send('No battle active to submit to');
+      }
+
       const { submissions } = serverBattle;
       submissions[message.author.id] = link;
 
