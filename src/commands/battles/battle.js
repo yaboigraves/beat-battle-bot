@@ -163,7 +163,7 @@ class BattleCommand extends Command {
           });
 
           // create a listener object
-          const listner = new DBListener(message, time);
+          const listner = new DBListener(message, time, this.client.util);
 
           // add all the players to the db and set the state to battling
           Battle.updateOne({ serverID: message.guild.id, status: 'PREPARING' }, { $set: { playerIDs: reactedIDs, status: 'BATTLING', date: +new Date() } }, () => {

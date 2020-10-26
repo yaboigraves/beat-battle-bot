@@ -16,7 +16,7 @@ const dl = new Downloader();
 // when a change is detected we need to verify that the change is happening to the battle relevant to this server
 
 class DBListener {
-  constructor(message, time) {
+  constructor(message, time, AkairoClient) {
     const role = message.guild.roles.cache.find((r) => r.name === 'Participant');
     const options = { fullDocument: 'updateLookup' };
 
@@ -55,7 +55,7 @@ class DBListener {
           Battle.updateOne({ serverID: message.guild.id, status: 'BATTLING' }, { $set: { status: 'VOTING' } }, () => {
             return message.channel.send(`Battles over!! ${role}`);
           });
-        }, 15 * 1000);
+        }, 5 * 1000);
       }
       else if (currentStatus === 'VOTING') {
         // when voting is switched to we need to create a timeout that waits voting timeout
@@ -64,8 +64,9 @@ class DBListener {
         // the voting collector will need to be declared before the ifelse block so it can be
         // accessed in the finished condtional
 
+        // TODO: check if this should be owner ID or something else
         const filter = (reaction, user) => {
-          return ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣'].includes(reaction.emoji.name) && user.id !== this.client.user.id;
+          return ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣'].includes(reaction.emoji.name) && user.id !== AkairoClient.ownerID;
         };
 
         Battle.findOne({ serverID: message.guild.id, status: 'VOTING' }).then((battleResults) => {
@@ -83,22 +84,22 @@ class DBListener {
           // so this needs to call a function inside the appropriate command
           // shouldnt do any of the voting embed stuff in here
 
-          const votingEmbed = this.client.util.embed()
-            .setColor('GOLD')
-            .setTitle(':ballot_box: Voting Has Begun!')
-            .setDescription('React with 1️⃣,2️⃣,3️⃣,4️⃣,5️⃣ to vote.\nPlease wait until all numbers have been loaded.\nVoting will end automatically in 45 minutes.');
+          //   const votingEmbed = AkairoClient.util.embed()
+          //     .setColor('GOLD')
+          //     .setTitle(':ballot_box: Voting Has Begun!')
+          //     .setDescription('React with 1️⃣,2️⃣,3️⃣,4️⃣,5️⃣ to vote.\nPlease wait until all numbers have been loaded.\nVoting will end automatically in 45 minutes.');
 
-          message.channel.send(votingEmbed);
+          //   message.channel.send(votingEmbed);
 
           for (let i = 0; i < battleResults.playerIDs.length; i += 1) {
             if (battleResults.submissions[battleResults.playerIDs[i]] === undefined) {
-              const noSubmissionEmbed = this.client.util.embed().setColor('RED')
+              const noSubmissionEmbed = AkairoClient.embed().setColor('RED')
                 .setTitle('No Submission')
                 .setDescription(`From <@${battleResults.playerIDs[i]}`);
               return message.channel.send(noSubmissionEmbed);
             }
 
-            const voteReactEmbed = this.client.util.embed()
+            const voteReactEmbed = AkairoClient.embed()
               .setColor('GOLD')
               .setTitle(`:crossed_swords: ${battleResults.submissions[battleResults.playerIDs[i]]}`)
               .setDescription(`Submitted By <@${battleResults.playerIDs[i]}>`);
@@ -200,7 +201,7 @@ class DBListener {
 
             const score = submissionsScores[resultsBattle.playerIDs[i]];
 
-            const resultEmbed = this.client.util.embed()
+            const resultEmbed = AkairoClient.embed()
               .setColor('BLUE')
               .setTitle(` ${resultsBattle.submissions[resultsBattle.playerIDs[i]]}`)
               .setDescription(`Submitted By : <@${resultsBattle.playerIDs[i]}> \n Score : ${score}`);
@@ -221,7 +222,7 @@ class DBListener {
           }
 
           // after the await, we then display the winner and then update leaderboards
-          const winnerEmbed = this.client.util.embed()
+          const winnerEmbed = AkairoClient.embed()
             .setColor('GOLD')
             .setTitle(`:fire: ${winner.submissionLink}\nScore : ${winner.score}`)
             .setDescription(`:crown: The Winner is - <@${winner.id}>`);

@@ -37,10 +37,6 @@ class VoteCommand extends Command {
 
     // TODO: add announcement that voting has started and ended (listener)
   }
-
-  displayVotes() {
-
-  }
 }
 
 module.exports = VoteCommand;
