@@ -11,8 +11,6 @@ const Downloader = require('../../ytdownloader');
 
 const dl = new Downloader();
 
-const DBListener = require('../../listeners/client/dbListener');
-
 class BattleCommand extends Command {
   constructor() {
     super('battle', {
@@ -66,24 +64,25 @@ class BattleCommand extends Command {
       return message.channel.send(embed);
     }
 
-    const videoid = sample.match(/(?:https?:\/{2})?(?:w{3}\.)?youtu(?:be)?\.(?:com|be)(?:\/watch\?v=|\/)([^\s&]+)/);
-    if (videoid != null) {
-      dl.getMP3({ videoId: videoid[1] }, (err, res) => {
-        if (err) {
-          throw err;
-        } else {
-          message.channel.send('', { files: [res.file] }).then(() => {
-            fs.unlink(res.file, (errr) => {
-              if (errr) {
-                throw (errr);
-              }
-            });
-          });
-        }
-      });
-    } else {
-      return message.channel.send('Invalid sample link, must be youtube link.');
-    }
+    // TODO: reimpliment yt download
+    // const videoid = sample.match(/(?:https?:\/{2})?(?:w{3}\.)?youtu(?:be)?\.(?:com|be)(?:\/watch\?v=|\/)([^\s&]+)/);
+    // if (videoid != null) {
+    //   dl.getMP3({ videoId: videoid[1] }, (err, res) => {
+    //     if (err) {
+    //       throw err;
+    //     } else {
+    //       message.channel.send('', { files: [res.file] }).then(() => {
+    //         fs.unlink(res.file, (errr) => {
+    //           if (errr) {
+    //             throw (errr);
+    //           }
+    //         });
+    //       });
+    //     }
+    //   });
+    // } else {
+    //   return message.channel.send('Invalid sample link, must be youtube link.');
+    // }
 
     // battle in progress
     Battle.find({ serverID: message.guild.id }).then((serverBattles) => {
@@ -161,9 +160,6 @@ class BattleCommand extends Command {
               }
             }
           });
-
-          // create a listener object
-          const listner = new DBListener(message, time, this.client.util);
 
           // add all the players to the db and set the state to battling
           Battle.updateOne({ serverID: message.guild.id, status: 'PREPARING' }, { $set: { playerIDs: reactedIDs, status: 'BATTLING', date: +new Date() } }, () => {

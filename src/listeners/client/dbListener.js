@@ -17,67 +17,69 @@ const dl = new Downloader();
 
 class DBListener {
   constructor(AkairoClient) {
+    this.client = AkairoClient;
     // console.log(AkairoClient);
-    console.log(AkairoClient.guilds.cache);
+    // console.log(AkairoClient.guilds.cache);
 
-    const votingEmbed = AkairoClient.util.embed()
-      .setColor('GOLD')
-      .setTitle(':ballot_box: Voting Has Begun!')
-      .setDescription('React with 1️⃣,2️⃣,3️⃣,4️⃣,5️⃣ to vote.\nPlease wait until all numbers have been loaded.\nVoting will end automatically in 45 minutes.');
-
-    // message.channel.send(votingEmbed);
+    // const votingEmbed = AkairoClient.util.embed()
+    //   .setColor('GOLD')
+    //   .setTitle(':ballot_box: Voting Has Begun!')
+    //   .setDescription('React with 1️⃣,2️⃣,3️⃣,4️⃣,5️⃣ to vote.\nPlease wait until all numbers have been loaded.\nVoting will end automatically in 45 minutes.');
 
     // const role = message.guild.roles.cache.find((r) => r.name === 'Participant');
     const options = { fullDocument: 'updateLookup' };
-
     const changeStream = Battle.watch(options);
 
     changeStream.on('change', (next) => {
+      if (next.operationType !== 'replace' && next.operationType !== 'update') {
+        return;
+      }
       const { serverID } = next.fullDocument;
+      const { channelID } = next.fullDocument.reactMessage;
+
+      let guild; let channel;
 
       // server id for testing is 751572659023642695
       // db has it wrong???
-      AkairoClient.guilds.fetch('751572659023642695').then((guild) => {
-        console.log(guild);
-      }).catch((err) => logger.error(err));
+      // console.log(this.client);
+
+      AkairoClient.guilds.fetch('751572659023642695').then((g) => {
+        guild = g;
+        // console.log(guild);
+      }).catch((err) => {
+        logger.error(err);
+      });
+
+      this.client.channels.fetch(channelID).then((c) => {
+        channel = c;
+      }).catch((error) => logger.error(error));
+
+      // mvoe this somewhere else
+      // const role = guild.roles.cache.find((r) => r.name === 'Participant');
+
+      let currentStatus = '';
+
+      if (next.operationType === 'replace') {
+        currentStatus = next.fullDocument.status;
+      } else if (next.operationType === 'update') {
+        currentStatus = next.updateDescription.updatedFields.status;
+      }
+
+      if (currentStatus === 'PREPARING') {
+        console.log('preparing found');
+      }
+
+      else if (currentStatus === 'BATTLING') {
+        setTimeout(() => {
+          Battle.updateOne({ serverID: '751572659023642695', status: 'BATTLING' }, { $set: { status: 'VOTING' } }, () => {
+            // return channel.send(`Battles over!! ${role}`);
+
+            return channel.send('Battles over!! ');
+          });
+        }, 10 * 1000);
+      }
     });
 
-    // const voteReactionCollectors = [];
-
-    // changeStream.on('change', (next) => {
-    //   console.log('change stream change thang for');
-    //   console.log(next.documentKey);
-    //   console.log(next.fullDocument);
-    //   // console.log('received a change to the collection: \t', next);
-
-    //   let currentStatus = '';
-
-    //   // eslint-disable-next-line prefer-const
-
-    //   //   const serverBattle = serverBattles;
-
-    //   if (next.operationType === 'replace') {
-    //     // console.log('replace operation');
-    //     currentStatus = next.fullDocument.status;
-    //   } else if (next.operationType === 'update') {
-    //     // console.log('update operation');
-    //     currentStatus = next.updateDescription.updatedFields.status;
-    //   }
-
-    //   // TODO: package this listener code up into some kind of object and then import it
-    //   // rather than having all this code here
-
-    //   if (currentStatus === 'PREPARING') {
-    //     console.log('preparing found');
-    //   }
-
-    //   else if (currentStatus === 'BATTLING') {
-    //     setTimeout(() => {
-    //       Battle.updateOne({ serverID: message.guild.id, status: 'BATTLING' }, { $set: { status: 'VOTING' } }, () => {
-    //         return message.channel.send(`Battles over!! ${role}`);
-    //       });
-    //     }, 5 * 1000);
-    //   }
     //   else if (currentStatus === 'VOTING') {
     //     // when voting is switched to we need to create a timeout that waits voting timeout
     //     // no point in really timing this so we're just gonna make it one hour for now
