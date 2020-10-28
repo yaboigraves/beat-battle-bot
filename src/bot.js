@@ -2,6 +2,7 @@ const { AkairoClient, CommandHandler, ListenerHandler } = require('discord-akair
 const mongoose = require('mongoose');
 const logger = require('./logger');
 const pkg = require('../package.json');
+const DBListener = require('./listeners/client/dbListener');
 
 require('dotenv-safe').config();
 
@@ -51,11 +52,16 @@ class Client extends AkairoClient {
 logger.success(`BattleBot v${pkg.version}`, logger.prefix('~'));
 
 mongoose.connect(process.env.MONGOURL, mongoOptions).then(() => {
-  if (mongoose.connection.readyState === 1) logger.success('Connected to MongoDB.');
-  else logger.error('Could not connect to MongoDB.');
+  if (mongoose.connection.readyState === 1) {
+    logger.success('Connected to MongoDB.');
+  } else logger.error('Could not connect to MongoDB.');
 });
 
 const client = new Client();
+
 client.battles = {};
 
 client.login(process.env.TOKEN);
+
+// create a DB listener
+const dbListner = new DBListener(client);
