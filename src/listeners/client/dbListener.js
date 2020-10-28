@@ -1,3 +1,4 @@
+/* eslint-disable object-shorthand */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable max-len */
 /* eslint-disable brace-style */
@@ -5,10 +6,6 @@ const { Command, Argument } = require('discord-akairo');
 const logger = require('../../logger');
 // const { ObjectId } = require('mongodb');
 const Battle = require('../../models/battle');
-
-const Downloader = require('../../ytdownloader');
-
-const dl = new Downloader();
 
 // so rather than opening and closing these constantly, we're just going to open one change stream on launch
 // after the stream is open it then just handles dispensing of jobs between clients
@@ -18,13 +15,6 @@ const dl = new Downloader();
 class DBListener {
   constructor(AkairoClient) {
     this.client = AkairoClient;
-    // console.log(AkairoClient);
-    // console.log(AkairoClient.guilds.cache);
-
-    // const votingEmbed = AkairoClient.util.embed()
-    //   .setColor('GOLD')
-    //   .setTitle(':ballot_box: Voting Has Begun!')
-    //   .setDescription('React with 1️⃣,2️⃣,3️⃣,4️⃣,5️⃣ to vote.\nPlease wait until all numbers have been loaded.\nVoting will end automatically in 45 minutes.');
 
     // const role = message.guild.roles.cache.find((r) => r.name === 'Participant');
     const options = { fullDocument: 'updateLookup' };
@@ -46,7 +36,9 @@ class DBListener {
       // db has it wrong???
       // console.log(this.client);
 
-      AkairoClient.guilds.fetch('751572659023642695').then((g) => {
+      // console.log(`Server ID of change: ${serverID}`);
+
+      AkairoClient.guilds.fetch(serverID).then((g) => {
         guild = g;
         // console.log(guild);
       }).catch((err) => {
@@ -74,7 +66,7 @@ class DBListener {
 
       else if (currentStatus === 'BATTLING') {
         setTimeout(() => {
-          Battle.updateOne({ serverID: '751572659023642695', status: 'BATTLING' }, { $set: { status: 'VOTING' } }, () => {
+          Battle.updateOne({ serverID: serverID, status: 'BATTLING' }, { $set: { status: 'VOTING' } }, () => {
             // return channel.send(`Battles over!! ${role}`);
 
             return channel.send('Battles over!! ');
@@ -94,7 +86,7 @@ class DBListener {
           return ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣'].includes(reaction.emoji.name) && user.id !== AkairoClient.ownerID;
         };
 
-        Battle.findOne({ serverID: '751572659023642695', status: 'VOTING' }).then((battleResults) => {
+        Battle.findOne({ serverID, status: 'VOTING' }).then((battleResults) => {
           if (battleResults === null) {
             return channel.send('No battle in the voting phase.');
           }
@@ -185,11 +177,13 @@ class DBListener {
                     voteMsg.edit(voteReactEmbed.setDescription(`${numReactions}/${battleResults.playerIDs.length} votes recieved. \n Current Score : ${score} `));
 
                     // update the db with the score
-                    Battle.findOne({ serverID: '751572659023642695', status: 'VOTING' }).then((serverBattle2) => {
+                    // eslint-disable-next-line object-shorthand
+                    Battle.findOne({ serverID: serverID, status: 'VOTING' }).then((serverBattle2) => {
                       const { submissionsScores } = serverBattle2;
                       submissionsScores[serverBattle2.playerIDs[i]] = voteSubmissionScore;
 
-                      Battle.updateOne({ serverID: '751572659023642695', status: 'VOTING' }, { $set: { submissionsScores } }, () => {
+                      // eslint-disable-next-line object-shorthand
+                      Battle.updateOne({ serverID: serverID, status: 'VOTING' }, { $set: { submissionsScores } }, () => {
                         // this is a great callback
                       });
                     });
@@ -202,7 +196,7 @@ class DBListener {
 
       else if (currentStatus === 'RESULTS') {
         // db query for the battle because i think the reference is broken
-        Battle.findOne({ serverID: '751572659023642695', status: 'RESULTS' }).then((resultsBattle) => {
+        Battle.findOne({ serverID: serverID, status: 'RESULTS' }).then((resultsBattle) => {
           let winner;
 
           for (let i = 0; i < voteReactionCollectors.length; i += 1) {
@@ -251,7 +245,7 @@ class DBListener {
           channel.send(winnerEmbed);
 
           // eslint-disable-next-line no-underscore-dangle
-          Battle.updateOne({ serverID: '751572659023642695', status: 'RESULTS' }, { $set: { status: 'FINISHED', active: 'false' } }, () => {
+          Battle.updateOne({ serverID: serverID, status: 'RESULTS' }, { $set: { status: 'FINISHED', active: 'false' } }, () => {
             // changeStream.close();
           });
         });
