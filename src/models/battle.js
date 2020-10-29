@@ -10,10 +10,10 @@ const battle = new mongoose.Schema({
   },
 
   serverID: {
-    type: Number,
+    type: String,
     required: true,
-    minlength: 18,
-    maxlength: 18,
+    // minlength: 18,
+    // maxlength: 18,
   },
 
   // the message users react to
