@@ -10,32 +10,20 @@ class VoteCommand extends Command {
       description: {
         icon: ':ballot_box:',
         content: 'Triggers the voting phase.',
-        usage: '.vote timeout:30',
+        usage: '.vote',
       },
-      args: [
-        {
-          // time in minutes to watch for reactions
-          // 1 to 15 minutes
-          id: 'timeout',
-          type: Argument.range('number', 1, 60),
-          // 10 minutes by default
-          default: 600, // temporary, in seconds
-          match: 'option',
-          flag: 'timeout:',
-        },
-
-      ],
     });
   }
 
-  async exec(message, { timeout }) {
-    await Battle.findOne({ serverID: message.guild.id, status: 'VOTING' }).then((battleResults) => {
+  async exec(message) {
+    await Battle.findOne({ serverID: message.guild.id, status: 'BATTLING' }).then((battleResults) => {
       if (battleResults === null) {
-        return message.channel.send('No battle in the voting phase.');
+        return message.channel.send('No battle currently ready for voting.');
       }
-    });
 
-    // TODO: add announcement that voting has started and ended (listener)
+      // move the battle in the current server to the voting phase
+      Battle.updateOne({ serverID: message.guild.id, status: 'BATTLING' }, { $set: { status: 'VOTING' } }).exec();
+    });
   }
 }
 

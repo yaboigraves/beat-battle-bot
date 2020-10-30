@@ -64,13 +64,15 @@ class DBListener {
         console.log('preparing found');
       }
 
+      // so we're not going to move the state anymore until vote is run so people can still submit
       else if (currentStatus === 'BATTLING') {
         setTimeout(() => {
-          Battle.updateOne({ serverID: serverID, status: 'BATTLING' }, { $set: { status: 'VOTING' } }, () => {
-            // return channel.send(`Battles over!! ${role}`);
+          return channel.send('Battles over!!');
 
-            return channel.send('Battles over!! ');
-          });
+          // Battle.updateOne({ serverID: serverID, status: 'BATTLING' }, { $set: { status: 'VOTING' } }, () => {
+          //   // return channel.send(`Battles over!! ${role}`);
+
+          // });
         }, 10 * 1000);
       }
 
