@@ -98,7 +98,6 @@ class BattleCommand extends Command {
       }
 
       // create the battle and append it to the DB in the preparing state
-      console.log(`battle has id ${message.guild.id}`);
 
       const battleOpts = {
         serverID: message.guild.id,
