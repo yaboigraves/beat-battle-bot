@@ -64,15 +64,12 @@ class DBListener {
         console.log('preparing found');
       }
 
+      // so we're not going to move the state anymore until vote is run so people can still submit
       else if (currentStatus === 'BATTLING') {
         //
 
         setTimeout(() => {
-          Battle.updateOne({ serverID: serverID, status: 'BATTLING' }, { $set: { status: 'VOTING' } }, () => {
-            // return channel.send(`Battles over!! ${role}`);
-
-            return channel.send('Battles over!! ');
-          });
+          return channel.send('Battles over!! Run the .vote command to enter the voting phase once everyone has submit.');
         }, 10 * 1000);
       }
 
@@ -98,15 +95,12 @@ class DBListener {
             return channel.send('No one submitted, ending battle');
           }
 
-          // so this needs to call a function inside the appropriate command
-          // shouldnt do any of the voting embed stuff in here
+          const votingEmbed = AkairoClient.util.embed()
+            .setColor('GOLD')
+            .setTitle(':ballot_box: Voting Has Begun!')
+            .setDescription('React with 1️⃣,2️⃣,3️⃣,4️⃣,5️⃣ to vote.\nPlease wait until all numbers have been loaded.\nVoting will end automatically in 45 minutes.');
 
-          //   const votingEmbed = AkairoClient.util.embed()
-          //     .setColor('GOLD')
-          //     .setTitle(':ballot_box: Voting Has Begun!')
-          //     .setDescription('React with 1️⃣,2️⃣,3️⃣,4️⃣,5️⃣ to vote.\nPlease wait until all numbers have been loaded.\nVoting will end automatically in 45 minutes.');
-
-          //   message.channel.send(votingEmbed);
+          channel.send(votingEmbed);
 
           for (let i = 0; i < battleResults.playerIDs.length; i += 1) {
             if (battleResults.submissions[battleResults.playerIDs[i]] === undefined) {
@@ -224,8 +218,7 @@ class DBListener {
               .setDescription(`Submitted By : <@${resultsBattle.playerIDs[i]}> \n Score : ${score}`);
 
             // todo: only post the top three at the end maybe?
-
-            // check if the score is larger than the current winners score
+            channel.send(resultEmbed);
 
             if (winner.score < score) {
               winner.id = resultsBattle.playerIDs[i];
@@ -234,7 +227,6 @@ class DBListener {
             }
 
             // TODO: reimpliment this
-            // while we're at it and looping thru player id's remove their participant role
             // message.guild.members.cache.get(resultsBattle.playerIDs[i]).roles.remove(role);
           }
 
