@@ -65,6 +65,8 @@ class DBListener {
       }
 
       else if (currentStatus === 'BATTLING') {
+        //
+
         setTimeout(() => {
           Battle.updateOne({ serverID: serverID, status: 'BATTLING' }, { $set: { status: 'VOTING' } }, () => {
             // return channel.send(`Battles over!! ${role}`);
