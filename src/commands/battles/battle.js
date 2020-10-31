@@ -11,6 +11,8 @@ const Downloader = require('../../ytdownloader');
 
 const dl = new Downloader();
 
+const utility = require('../../utility/utility');
+
 class BattleCommand extends Command {
   constructor() {
     super('battle', {
@@ -63,6 +65,8 @@ class BattleCommand extends Command {
 
       return message.channel.send(embed);
     }
+
+    utility.checkIfRoleExists(message);
 
     // TODO: reimpliment yt download
     // const videoid = sample.match(/(?:https?:\/{2})?(?:w{3}\.)?youtu(?:be)?\.(?:com|be)(?:\/watch\?v=|\/)([^\s&]+)/);

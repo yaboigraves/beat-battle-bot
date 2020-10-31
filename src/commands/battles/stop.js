@@ -25,8 +25,6 @@ class StopCommand extends Command {
       Battle.deleteOne({ _id: serverBattle._id }).then(() => {
         return message.channel.send('Battle cancelled');
       });
-
-      // drop the db from the table (no point in setting it finished)
     });
   }
 }
