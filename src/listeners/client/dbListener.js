@@ -16,7 +16,6 @@ class DBListener {
   constructor(AkairoClient) {
     this.client = AkairoClient;
 
-    // const role = message.guild.roles.cache.find((r) => r.name === 'Participant');
     const options = { fullDocument: 'updateLookup' };
     const changeStream = Battle.watch(options);
 
@@ -32,6 +31,9 @@ class DBListener {
       // TODO: redo this system
       const voteReactionCollectors = [];
 
+      // participant role
+      let role;
+
       AkairoClient.guilds.fetch(serverID).then((g) => {
         guild = g;
       }).catch((err) => {
@@ -40,9 +42,8 @@ class DBListener {
 
       this.client.channels.fetch(channelID).then((c) => {
         channel = c;
+        role = channel.guild.roles.cache.find((r) => r.name === 'Participant');
       }).catch((error) => logger.error(error));
-
-      // const role = guild.roles.cache.find((r) => r.name === 'Participant');
 
       let currentStatus = '';
 
@@ -59,7 +60,7 @@ class DBListener {
       // so we're not going to move the state anymore until vote is run so people can still submit
       else if (currentStatus === 'BATTLING') {
         setTimeout(() => {
-          return channel.send('Battles over!! Run the .vote command to enter the voting phase once everyone has submit.');
+          return channel.send(`Battles over ${role}! Run the .vote command to enter the voting phase once everyone has submit.`);
         }, 10 * 1000);
       }
 
