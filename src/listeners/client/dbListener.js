@@ -32,15 +32,8 @@ class DBListener {
       // TODO: redo this system
       const voteReactionCollectors = [];
 
-      // server id for testing is 751572659023642695
-      // db has it wrong???
-      // console.log(this.client);
-
-      // console.log(`Server ID of change: ${serverID}`);
-
       AkairoClient.guilds.fetch(serverID).then((g) => {
         guild = g;
-        // console.log(guild);
       }).catch((err) => {
         logger.error(err);
       });
@@ -49,7 +42,6 @@ class DBListener {
         channel = c;
       }).catch((error) => logger.error(error));
 
-      // mvoe this somewhere else
       // const role = guild.roles.cache.find((r) => r.name === 'Participant');
 
       let currentStatus = '';
