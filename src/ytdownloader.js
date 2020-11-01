@@ -44,7 +44,7 @@ Downloader.prototype.getMP3 = function (track, callback) {
   // Register callback
   self.callbacks[track.videoId] = callback;
   // Trigger download
-  self.YD.download(track.videoId, track.name);
+  self.YD.download(track.videoId, `${track.serverId + new Date().getTime()}.mp3`);
 };
 
 module.exports = Downloader;

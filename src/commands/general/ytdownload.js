@@ -31,7 +31,7 @@ class YtDownloadCommand extends Command {
         if (err) {
           throw err;
         } else {
-          message.channel.send('', { files: [res.file] }).then(() => {
+          message.channel.send('', { files: [{ attachment: res.file, name: `${res.videoTitle}.mp3` }] }).then(() => {
             if (fs.existsSync(res.file)) {
               fs.unlink(res.file, (errr) => {
                 if (errr) {
