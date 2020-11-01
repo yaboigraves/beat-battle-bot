@@ -16,11 +16,11 @@ class StopCommand extends Command {
 
   async exec(message) {
     await Battle.findOne({ serverID: message.guild.id, status: { $ne: 'FINISHED' } }).then((serverBattle) => {
-      // loop through all the playerid's and post their submissions, add 1-5 reactions below them
       if (serverBattle === null) {
         return message.channel.send('No battle currently active to stop');
       }
 
+      // TODO: tell the db listener to turn off any timeouts waiting in that server too
       // eslint-disable-next-line no-underscore-dangle
       Battle.deleteOne({ _id: serverBattle._id }).then(() => {
         return message.channel.send('Battle cancelled');
