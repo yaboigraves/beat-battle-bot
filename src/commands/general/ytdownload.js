@@ -26,18 +26,19 @@ class YtDownloadCommand extends Command {
 
   async exec(message, { sample }) {
     const videoid = sample.match(/(?:https?:\/{2})?(?:w{3}\.)?youtu(?:be)?\.(?:com|be)(?:\/watch\?v=|\/)([^\s&]+)/);
-
     if (videoid != null) {
-      dl.getMP3({ videoId: videoid[1] }, (err, res) => {
+      dl.getMP3({ videoId: videoid[1], serverId: message.guild.id }, (err, res) => {
         if (err) {
           throw err;
         } else {
-          message.channel.send('', { files: [res.file] }).then(() => {
-            fs.unlink(res.file, (errr) => {
-              if (errr) {
-                throw (errr);
-              }
-            });
+          message.channel.send('', { files: [{ attachment: res.file, name: `${res.videoTitle}.mp3` }] }).then(() => {
+            if (fs.existsSync(res.file)) {
+              fs.unlink(res.file, (errr) => {
+                if (errr) {
+                  throw (errr);
+                }
+              });
+            }
           });
         }
       });
