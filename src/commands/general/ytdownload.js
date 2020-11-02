@@ -1,6 +1,7 @@
 const { Command } = require('discord-akairo');
 const fs = require('fs');
 const Downloader = require('../../ytdownloader');
+const logger = require('./logger');
 
 const dl = new Downloader();
 
@@ -25,8 +26,8 @@ class YtDownloadCommand extends Command {
   }
 
   async exec(message, { sample }) {
-
     const videoid = sample.match(/(?:https?:\/{2})?(?:w{3}\.)?youtu(?:be)?\.(?:com|be)(?:\/watch\?v=|\/)([^\s&]+)/);
+    logger.success('test');
     if (videoid != null) {
       dl.getMP3({ videoId: videoid[1], serverId: message.guild.id }, (err, res) => {
         if (err) {
@@ -46,7 +47,6 @@ class YtDownloadCommand extends Command {
     } else {
       return message.channel.send('Invalid sample link, must be youtube link.');
     }
-
   }
 }
 
