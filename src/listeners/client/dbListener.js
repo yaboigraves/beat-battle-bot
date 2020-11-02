@@ -60,11 +60,13 @@ class DBListener {
       // so we're not going to move the state anymore until vote is run so people can still submit
       // TODO: reipliment correct time to this, probably need to pull the length from the db
       else if (currentStatus === 'BATTLING') {
+
         Battle.findOne({ serverID, status: 'BATTLING' }).then((serverBattle) => {
           setTimeout(() => {
             return channel.send(`Battles over ${role}! Run the .vote command to enter the voting phase once everyone has submit.`);
           }, serverBattle.length * 1000);
         });
+
       }
 
       else if (currentStatus === 'VOTING') {

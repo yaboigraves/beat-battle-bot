@@ -54,7 +54,7 @@ logger.success(`BattleBot v${pkg.version}`, logger.prefix('~'));
 
 mongoose.connect(process.env.MONGOURL, mongoOptions).then(() => {
   if (mongoose.connection.readyState === 1) {
-    logger.success('Connected to MongoDB.');
+    logger.success('Connected to MongoDB. ');
   } else logger.error('Could not connect to MongoDB.');
 });
 
@@ -69,3 +69,4 @@ const dbListner = new DBListener(client);
 
 // clear the temp folder
 utility.clearTempFiles();
+
