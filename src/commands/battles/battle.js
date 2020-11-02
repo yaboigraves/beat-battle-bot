@@ -11,6 +11,8 @@ const Downloader = require('../../ytdownloader');
 
 const dl = new Downloader();
 
+const utility = require('../../utility/utility');
+
 class BattleCommand extends Command {
   constructor() {
     super('battle', {
@@ -64,25 +66,28 @@ class BattleCommand extends Command {
       return message.channel.send(embed);
     }
 
-    // TODO: reimpliment yt download
-    // const videoid = sample.match(/(?:https?:\/{2})?(?:w{3}\.)?youtu(?:be)?\.(?:com|be)(?:\/watch\?v=|\/)([^\s&]+)/);
-    // if (videoid != null) {
-    //   dl.getMP3({ videoId: videoid[1] }, (err, res) => {
-    //     if (err) {
-    //       throw err;
-    //     } else {
-    //       message.channel.send('', { files: [res.file] }).then(() => {
-    //         fs.unlink(res.file, (errr) => {
-    //           if (errr) {
-    //             throw (errr);
-    //           }
-    //         });
-    //       });
-    //     }
-    //   });
-    // } else {
-    //   return message.channel.send('Invalid sample link, must be youtube link.');
-    // }
+    utility.checkIfRoleExists(message);
+
+    const videoid = sample.match(/(?:https?:\/{2})?(?:w{3}\.)?youtu(?:be)?\.(?:com|be)(?:\/watch\?v=|\/)([^\s&]+)/);
+    if (videoid != null) {
+      dl.getMP3({ videoId: videoid[1], serverId: message.guild.id }, (err, res) => {
+        if (err) {
+          throw err;
+        } else {
+          message.channel.send('', { files: [{ attachment: res.file, name: `${res.videoTitle}.mp3` }] }).then(() => {
+            if (fs.existsSync(res.file)) {
+              fs.unlink(res.file, (errr) => {
+                if (errr) {
+                  throw (errr);
+                }
+              });
+            }
+          });
+        }
+      });
+    } else {
+      return message.channel.send('Invalid sample link, must be youtube link.');
+    }
 
     // battle in progress
     Battle.find({ serverID: message.guild.id }).then((serverBattles) => {

@@ -16,7 +16,6 @@ class DBListener {
   constructor(AkairoClient) {
     this.client = AkairoClient;
 
-    // const role = message.guild.roles.cache.find((r) => r.name === 'Participant');
     const options = { fullDocument: 'updateLookup' };
     const changeStream = Battle.watch(options);
 
@@ -32,25 +31,19 @@ class DBListener {
       // TODO: redo this system
       const voteReactionCollectors = [];
 
-      // server id for testing is 751572659023642695
-      // db has it wrong???
-      // console.log(this.client);
-
-      // console.log(`Server ID of change: ${serverID}`);
+      // participant role
+      let role;
 
       AkairoClient.guilds.fetch(serverID).then((g) => {
         guild = g;
-        // console.log(guild);
       }).catch((err) => {
         logger.error(err);
       });
 
       this.client.channels.fetch(channelID).then((c) => {
         channel = c;
+        role = channel.guild.roles.cache.find((r) => r.name === 'Participant');
       }).catch((error) => logger.error(error));
-
-      // mvoe this somewhere else
-      // const role = guild.roles.cache.find((r) => r.name === 'Participant');
 
       let currentStatus = '';
 
@@ -65,12 +58,15 @@ class DBListener {
       }
 
       // so we're not going to move the state anymore until vote is run so people can still submit
+      // TODO: reipliment correct time to this, probably need to pull the length from the db
       else if (currentStatus === 'BATTLING') {
-        //
 
-        setTimeout(() => {
-          return channel.send('Battles over!! Run the .vote command to enter the voting phase once everyone has submit.');
-        }, 10 * 1000);
+        Battle.findOne({ serverID, status: 'BATTLING' }).then((serverBattle) => {
+          setTimeout(() => {
+            return channel.send(`Battles over ${role}! Run the .vote command to enter the voting phase once everyone has submit.`);
+          }, serverBattle.length * 1000);
+        });
+
       }
 
       else if (currentStatus === 'VOTING') {

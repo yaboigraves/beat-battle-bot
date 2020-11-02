@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const logger = require('./logger');
 const pkg = require('../package.json');
 const DBListener = require('./listeners/client/dbListener');
+const utility = require('./utility/utility');
 
 require('dotenv-safe').config();
 
@@ -66,4 +67,6 @@ client.login(process.env.TOKEN);
 // create a DB listener
 const dbListner = new DBListener(client);
 
-console.log('dumby add for webhook test');
+// clear the temp folder
+utility.clearTempFiles();
+
