@@ -27,8 +27,9 @@ class YtDownloadCommand extends Command {
 
   async exec(message, { sample }) {
     const videoid = sample.match(/(?:https?:\/{2})?(?:w{3}\.)?youtu(?:be)?\.(?:com|be)(?:\/watch\?v=|\/)([^\s&]+)/);
-    logger.success('test');
+
     if (videoid != null) {
+      logger.success(videoid);
       dl.getMP3({ videoId: videoid[1], serverId: message.guild.id }, (err, res) => {
         if (err) {
           throw err;
