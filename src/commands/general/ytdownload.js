@@ -1,7 +1,7 @@
 const { Command } = require('discord-akairo');
 const fs = require('fs');
 const Downloader = require('../../ytdownloader');
-const logger = require('./logger');
+const logger = require('../../logger');
 
 const dl = new Downloader();
 
