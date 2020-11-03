@@ -45,6 +45,9 @@ Downloader.prototype.getMP3 = function (track, callback) {
 
   // Register callback
   self.callbacks[track.videoId] = callback;
+
+  logger.success('trying to ytdownload from interal library');
+
   // Trigger download
   self.YD.download(track.videoId, `${track.serverId + new Date().getTime()}.mp3`);
 };
