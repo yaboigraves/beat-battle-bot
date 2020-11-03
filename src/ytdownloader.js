@@ -1,4 +1,5 @@
 const YoutubeMp3Downloader = require('youtube-mp3-downloader');
+const logger = require('./logger');
 
 const Downloader = function () {
   const self = this;
@@ -40,6 +41,7 @@ const Downloader = function () {
 
 Downloader.prototype.getMP3 = function (track, callback) {
   const self = this;
+  logger.success('made it to getmp3');
 
   // Register callback
   self.callbacks[track.videoId] = callback;
