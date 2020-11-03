@@ -17,7 +17,7 @@ class CreditsCommand extends Command {
     const response = this.client.util.embed()
       .setColor('GREEN')
       .setTitle(':alembic: Created By')
-      .setDescription(' :cat: Reid - https://reid.cat/ \n :man_mage: Graves - https://gravesmakes.art/ \n :money_with_wings: Donate - https://ko-fi.com/beatbattledevs');
+      .setDescription(' :cat: Reid - https://reid.cat/ \n :man_mage: Graves - https://twitter.com/gravesmakesart \n :money_with_wings: Donate - https://ko-fi.com/beatbattledevs');
 
     message.channel.send(response);
   }
