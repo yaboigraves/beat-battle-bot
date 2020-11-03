@@ -40,11 +40,12 @@ class YtDownloadCommand extends Command {
 
       // message.channel.send('', { files: [{ attachment: 'src/commands/general/x.mp3' }] });
 
+      const uniqueFileName = `${message.id + new Date().getMilliseconds()}.mp3`;
       ytdl(sample, { filter: 'audioonly', format: 'mp3' })
-        .pipe(fs.createWriteStream('temp/audio.mp3'))
+        .pipe(fs.createWriteStream(`temp/${uniqueFileName}`))
         .on('finish', () => {
           logger.success('trying to send the file now');
-          message.channel.send('', { files: [{ attachment: 'temp/audio.mp3' }] }).then(() => {
+          message.channel.send('', { files: [{ attachment: `temp/${uniqueFileName}` }] }).then(() => {
             // delete the file
             if (fs.existsSync('temp/audio.mp3')) {
               fs.unlink('temp/audio.mp3', (errr) => {
@@ -53,30 +54,11 @@ class YtDownloadCommand extends Command {
                 }
               });
             }
+          }).catch((errorr) => {
+            logger.error(errorr);
+            throw errorr;
           });
         });
-
-    //   dl.getMP3({ videoId: videoid[1], serverId: message.guild.id }, (err, res) => {
-    //     if (err) {
-    //       logger.success('checkpoint error ');
-    //       throw err;
-    //     } else {
-    //       logger.success('made it to the send part');
-    //       logger.success(res);
-    //       message.channel.send('', { files: [{ attachment: res.file, name: `${res.videoTitle}.mp3` }] }).then(() => {
-    //         if (fs.existsSync(res.file)) {
-    //           fs.unlink(res.file, (errr) => {
-    //             if (errr) {
-    //               throw (errr);
-    //             }
-    //           });
-    //         }
-    //       });
-    //     }
-    //   });
-    // } else {
-    //   return message.channel.send('Invalid sample link, must be youtube link.');
-    // }
     }
   }
 }

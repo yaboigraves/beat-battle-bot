@@ -17,7 +17,7 @@ class ReadyListener extends Listener {
     logger.success(`Active in ${logger.chalk().cyan(guildCount)} server${guildCount > 1 ? 's' : ''}.`);
     this.client.user.setPresence({
       activity: {
-        name: process.env.STATUS,
+        name: process.env.STATUS || 'for .help',
         type: process.env.TYPE.toUpperCase() || 'WATCHING',
       },
       status: process.env.PRESENCE || 'dnd',
