@@ -5,6 +5,9 @@ const logger = require('../../logger');
 
 const dl = new Downloader();
 
+const ytdl = require('ytdl-core');
+const { measureMemory } = require('vm');
+
 class YtDownloadCommand extends Command {
   constructor() {
     super('ytDownload', {
@@ -30,26 +33,50 @@ class YtDownloadCommand extends Command {
     logger.success('checkpoint 1');
     // dumby comment again
     if (videoid != null) {
-      logger.success(videoid);
-      dl.getMP3({ videoId: videoid[1], serverId: message.guild.id }, (err, res) => {
-        if (err) {
-          logger.success('checkpoint error ');
-          throw err;
-        } else {
-          logger.success('made it to the send part');
-          message.channel.send('', { files: [{ attachment: res.file, name: `${res.videoTitle}.mp3` }] }).then(() => {
-            if (fs.existsSync(res.file)) {
-              fs.unlink(res.file, (errr) => {
+      // going to try a rewrite with just readable streams and the core library
+      logger.success(videoid[0]);
+
+      // stream.pipe(fs.createWriteStream('temp/x.mp3'));
+
+      // message.channel.send('', { files: [{ attachment: 'src/commands/general/x.mp3' }] });
+
+      ytdl(sample, { filter: 'audioonly', format: 'mp3' })
+        .pipe(fs.createWriteStream('temp/audio.mp3'))
+        .on('finish', () => {
+          logger.success('trying to send the file now');
+          message.channel.send('', { files: [{ attachment: 'temp/audio.mp3' }] }).then(() => {
+            // delete the file
+            if (fs.existsSync('temp/audio.mp3')) {
+              fs.unlink('temp/audio.mp3', (errr) => {
                 if (errr) {
-                  throw (errr);
+                  throw errr;
                 }
               });
             }
           });
-        }
-      });
-    } else {
-      return message.channel.send('Invalid sample link, must be youtube link.');
+        });
+
+    //   dl.getMP3({ videoId: videoid[1], serverId: message.guild.id }, (err, res) => {
+    //     if (err) {
+    //       logger.success('checkpoint error ');
+    //       throw err;
+    //     } else {
+    //       logger.success('made it to the send part');
+    //       logger.success(res);
+    //       message.channel.send('', { files: [{ attachment: res.file, name: `${res.videoTitle}.mp3` }] }).then(() => {
+    //         if (fs.existsSync(res.file)) {
+    //           fs.unlink(res.file, (errr) => {
+    //             if (errr) {
+    //               throw (errr);
+    //             }
+    //           });
+    //         }
+    //       });
+    //     }
+    //   });
+    // } else {
+    //   return message.channel.send('Invalid sample link, must be youtube link.');
+    // }
     }
   }
 }

@@ -16,7 +16,8 @@
     "dotenv-safe": "^8.2.0",
     "mongoose": "^5.10.8",
     "pm2": "^4.5.0",
-    "youtube-mp3-downloader": "^0.7.3"
+    "youtube-mp3-downloader": "^0.7.3",
+    "ytdl-core": "^4.0.2"
   },
   "devDependencies": {
     "eslint": "^7.10.0",
