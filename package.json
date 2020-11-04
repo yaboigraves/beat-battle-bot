@@ -7,7 +7,7 @@
   "author": "reid <2056111+sad@users.noreply.github.com>",
   "license": "MIT",
   "scripts": {
-    "start": "forever start ./src/bot.js"
+    "start": "node ./src/bot.js"
   },
   "dependencies": {
     "chalk": "^4.1.0",
@@ -18,6 +18,7 @@
     "mongoose": "^5.10.8",
     "nodemon": "^2.0.6",
     "pm2": "^4.5.0",
+    "pully": "^2.7.0",
     "youtube-mp3-downloader": "^0.7.3",
     "ytdl-core": "^4.0.2"
   },
