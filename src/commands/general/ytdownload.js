@@ -1,4 +1,4 @@
-import { Pully, Presets } from 'pully';
+// import { Pully, Presets } from 'pully';
 
 const { Command } = require('discord-akairo');
 const fs = require('fs');
@@ -10,7 +10,7 @@ const dl = new Downloader();
 const ytdl = require('ytdl-core');
 const { measureMemory } = require('vm');
 
-const pully = new Pully();
+// const pully = new Pully();
 
 class YtDownloadCommand extends Command {
   constructor() {
