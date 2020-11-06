@@ -26,6 +26,8 @@ class DBListener {
       const { serverID } = next.fullDocument;
       const { channelID } = next.fullDocument.reactMessage;
 
+      let battleTimeout;
+
       let guild; let channel;
 
       // TODO: redo this system
@@ -61,7 +63,7 @@ class DBListener {
       // TODO: reipliment correct time to this, probably need to pull the length from the db
       else if (currentStatus === 'BATTLING') {
         Battle.findOne({ serverID, status: 'BATTLING' }).then((serverBattle) => {
-          setTimeout(() => {
+          battleTimeout = setTimeout(() => {
             return channel.send(`Battles over ${role}! Run the .vote command to enter the voting phase once everyone has submit.`);
           }, serverBattle.length * 1000);
         });
@@ -236,6 +238,15 @@ class DBListener {
           Battle.updateOne({ serverID: serverID, status: 'RESULTS' }, { $set: { status: 'FINISHED', active: 'false' } }, () => {
             // changeStream.close();
           });
+        });
+      }
+
+      else if (currentStatus === 'STOPPING') {
+        logger.success('stopping battle');
+
+        clearTimeout(battleTimeout);
+        Battle.deleteOne({ serverID: serverID, status: 'STOPPING' }).then(() => {
+          return channel.send('Battle cancelled');
         });
       }
     });

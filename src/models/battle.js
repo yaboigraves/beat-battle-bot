@@ -71,6 +71,7 @@ const battle = new mongoose.Schema({
       'VOTING', // voting in progress
       'RESULTS', // results stage
       'FINISHED', // battle completed
+      'STOPPING', // battle is closing
     ],
   },
 });
