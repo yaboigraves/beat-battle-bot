@@ -22,9 +22,12 @@ class DBListener {
     let battleTimeout;
 
     changeStream.on('change', (next) => {
-      if (next.operationType !== 'replace' && next.operationType !== 'update') {
+      // check if its an insert
+
+      if (next.operationType !== 'replace' && next.operationType !== 'update' && next.operationType !== 'insert') {
         return;
       }
+
       const { serverID } = next.fullDocument;
       const { channelID } = next.fullDocument.reactMessage;
 
@@ -57,8 +60,76 @@ class DBListener {
         currentStatus = next.updateDescription.updatedFields.status;
       }
 
-      if (currentStatus === 'PREPARING') {
-        console.log('preparing found');
+      // retrieve the battle from the database
+      let serverBattle;
+
+      Battle.findOne({ serverID }).then((battle) => {
+        serverBattle = battle;
+      });
+
+      // check if its an insert
+
+      if (next.operationType === 'insert') {
+        // create the reaction collector and the timeout for voting
+
+        this.client.channels.fetch(channelID).then((c) => {
+          channel = c;
+          role = channel.guild.roles.cache.find((r) => r.name === 'Participant');
+
+          const reactFilter = (reaction, user) => {
+            return ['⚔️'].includes(reaction.emoji.name) && user.id !== this.client.user.id;
+          };
+
+          const reactEmbed = this.client.util.embed()
+            .setColor('GOLD')
+            .setTitle(':crossed_swords: A battle is about to begin')
+            .setDescription(`React to this message with :crossed_swords: to join the battle.\nIt will begin in **${next.fullDocument.timeout} seconds**.`);
+
+          channel.send(reactEmbed).then((msg) => {
+            msg.react('⚔️');
+
+            const collector = msg.createReactionCollector(reactFilter, { time: serverBattle.timeout * 1000 });
+            reactionCollectors.push(collector);
+            collector.on('end', (collected) => {
+            // nobody reacted
+              if (!collected.first()) {
+                const embed = this.client.util.embed()
+                  .setColor('RED')
+                  .setTitle(':warning: Nobody joined the battle, so it will not begin.')
+                  .setDescription('To start another battle, use `.battle <sample>`.\nSee `.help battle` for more information.');
+
+                msg.delete();
+                return channel.send(embed);
+              }
+
+              const reacts = collected.first().message.reactions.cache;
+              // message.channel.send(`${reacts.first().count - 1} people reacted`);
+              // console.log(swords.first().users.cache);
+
+              // list of all the players in the battle
+              const reactedIDs = [];
+
+              // give all the players the participant role
+              reacts.first().users.cache.forEach((user) => {
+                if (user.id !== this.client.user.id) {
+                  reactedIDs.push(user.id);
+                  if (role) {
+                    channel.guild.members.cache.get(user.id).roles.add(role);
+                  }
+                }
+              });
+
+              // add all the players to the db and set the state to battling
+              Battle.updateOne({ serverID: channel.guild.id, status: 'PREPARING' }, {
+                $set: {
+                  serverID: channel.guild.id, playerIDs: reactedIDs, status: 'BATTLING', date: +new Date(),
+                },
+              }, () => {
+                return channel.send(`The battle is starting! ${role}`);
+              });
+            });
+          });
+        }).catch((error) => logger.error(error));
       }
 
       // so we're not going to move the state anymore until vote is run so people can still submit
@@ -245,7 +316,6 @@ class DBListener {
       }
 
       else if (currentStatus === 'STOPPING') {
-        logger.success('stopping battle');
         clearTimeout(battleTimeout);
 
         for (let i = 0; i < voteReactionCollectors.length; i += 1) {
