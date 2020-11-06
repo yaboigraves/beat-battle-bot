@@ -104,11 +104,13 @@ class BattleCommand extends Command {
       }
 
       // create the battle and append it to the DB in the preparing state
-
+      const t = timeout;
       const battleOpts = {
         serverID: message.guild.id,
         length: time,
+        timeout: t,
         playerIDs: [],
+        active: true,
         status: 'PREPARING',
         reactMessage: {
           channelID: message.channel.id,
@@ -118,65 +120,69 @@ class BattleCommand extends Command {
       };
 
       const battle = new Battle(battleOpts);
-      battle.save().then((saved) => {
-        // console.log(saved);
+      battle.save().then(() => {
+        // very nice callback yes :)
+        Battle.updateOne({ serverID: message.guild.id, active: true }, { $set: { status: 'PREPARING', timeout: 15 } });
       });
 
-      const reactFilter = (reaction, user) => {
-        return ['⚔️'].includes(reaction.emoji.name) && user.id !== this.client.user.id;
-      };
+      // update the db with nothing to trigger a change stream
 
-      const reactEmbed = this.client.util.embed()
-        .setColor('GOLD')
-        .setTitle(':crossed_swords: A battle is about to begin')
-        .setDescription(`React to this message with :crossed_swords: to join the battle.\nIt will begin in **${timeout} seconds**.`);
+      // const reactFilter = (reaction, user) => {
+      //   return ['⚔️'].includes(reaction.emoji.name) && user.id !== this.client.user.id;
+      // };
 
-      message.channel.send(reactEmbed).then((msg) => {
-        msg.react('⚔️');
+      // const reactEmbed = this.client.util.embed()
+      //   .setColor('GOLD')
+      //   .setTitle(':crossed_swords: A battle is about to begin')
+      //   .setDescription(`React to this message with :crossed_swords: to join the battle.\nIt will begin in **${timeout} seconds**.`);
 
-        const collector = msg.createReactionCollector(reactFilter, { time: timeout * 1000 });
+      // message.channel.send(reactEmbed).then((msg) => {
+      //   msg.react('⚔️');
 
-        collector.on('end', (collected) => {
-        // nobody reacted
-          if (!collected.first()) {
-            const embed = this.client.util.embed()
-              .setColor('RED')
-              .setTitle(':warning: Nobody joined the battle, so it will not begin.')
-              .setDescription('To start another battle, use `.battle <sample>`.\nSee `.help battle` for more information.');
+      //   // TODO: move this to the db listener
+      //   const collector = msg.createReactionCollector(reactFilter, { time: timeout * 1000 });
 
-            msg.delete();
-            return message.channel.send(embed);
-          }
+      //   collector.on('end', (collected) => {
+      //   // nobody reacted
+      //     if (!collected.first()) {
+      //       const embed = this.client.util.embed()
+      //         .setColor('RED')
+      //         .setTitle(':warning: Nobody joined the battle, so it will not begin.')
+      //         .setDescription('To start another battle, use `.battle <sample>`.\nSee `.help battle` for more information.');
 
-          const role = message.guild.roles.cache.find((r) => r.name === 'Participant');
+      //       msg.delete();
+      //       return message.channel.send(embed);
+      //     }
 
-          const reacts = collected.first().message.reactions.cache;
-          // message.channel.send(`${reacts.first().count - 1} people reacted`);
-          // console.log(swords.first().users.cache);
+      //     const role = message.guild.roles.cache.find((r) => r.name === 'Participant');
 
-          // list of all the players in the battle
-          const reactedIDs = [];
+      //     const reacts = collected.first().message.reactions.cache;
+      //     // message.channel.send(`${reacts.first().count - 1} people reacted`);
+      //     // console.log(swords.first().users.cache);
 
-          // give all the players the participant role
-          reacts.first().users.cache.forEach((user) => {
-            if (user.id !== this.client.user.id) {
-              reactedIDs.push(user.id);
-              if (role) {
-                message.guild.members.cache.get(user.id).roles.add(role);
-              }
-            }
-          });
+      //     // list of all the players in the battle
+      //     const reactedIDs = [];
 
-          // add all the players to the db and set the state to battling
-          Battle.updateOne({ serverID: message.guild.id, status: 'PREPARING' }, {
-            $set: {
-              serverID: message.guild.id, playerIDs: reactedIDs, status: 'BATTLING', date: +new Date(),
-            },
-          }, () => {
-            return message.channel.send(`The battle is starting! ${role}`);
-          });
-        });
-      });
+      //     // give all the players the participant role
+      //     reacts.first().users.cache.forEach((user) => {
+      //       if (user.id !== this.client.user.id) {
+      //         reactedIDs.push(user.id);
+      //         if (role) {
+      //           message.guild.members.cache.get(user.id).roles.add(role);
+      //         }
+      //       }
+      //     });
+
+      //     // add all the players to the db and set the state to battling
+      //     Battle.updateOne({ serverID: message.guild.id, status: 'PREPARING' }, {
+      //       $set: {
+      //         serverID: message.guild.id, playerIDs: reactedIDs, status: 'BATTLING', date: +new Date(),
+      //       },
+      //     }, () => {
+      //       return message.channel.send(`The battle is starting! ${role}`);
+      //     });
+      //   });
+      // });
     });
   }
 }

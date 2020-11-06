@@ -22,9 +22,16 @@ class StopCommand extends Command {
 
       // TODO: tell the db listener to turn off any timeouts waiting in that server too
       // eslint-disable-next-line no-underscore-dangle
-      Battle.deleteOne({ _id: serverBattle._id }).then(() => {
-        return message.channel.send('Battle cancelled');
-      });
+
+      // so to actually stop the timeouts, before we cancel the battle
+      // we move the state of the battle to a "stopping" state, where the db listener can handle
+      // turning off the timers and all that lovely stuff
+      // Battle.deleteOne({ _id: serverBattle._id }).then(() => {
+
+      //   // return message.channel.send('Battle cancelled');
+      // });
+
+      Battle.updateOne({ serverID: message.guild.id, active: true }, { $set: { status: 'STOPPING' } }).exec();
     });
   }
 }

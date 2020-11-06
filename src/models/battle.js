@@ -49,6 +49,13 @@ const battle = new mongoose.Schema({
     default: 30,
   },
 
+  // start timeout time
+  timeout: {
+    type: Number,
+    required: true,
+    default: 30,
+  },
+
   sample: {
     type: String,
     required: true,
@@ -71,6 +78,7 @@ const battle = new mongoose.Schema({
       'VOTING', // voting in progress
       'RESULTS', // results stage
       'FINISHED', // battle completed
+      'STOPPING', // battle is closing
     ],
   },
 });

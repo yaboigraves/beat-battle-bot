@@ -7,7 +7,7 @@
   "author": "reid <2056111+sad@users.noreply.github.com>",
   "license": "MIT",
   "scripts": {
-    "start": "node ./src/bot.js"
+    "start": "pm2 start src/bot.js --name bot --watch"
   },
   "dependencies": {
     "chalk": "^4.1.0",
