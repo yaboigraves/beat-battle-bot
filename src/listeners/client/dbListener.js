@@ -19,6 +19,8 @@ class DBListener {
     const options = { fullDocument: 'updateLookup' };
     const changeStream = Battle.watch(options);
 
+    let battleTimeout;
+
     changeStream.on('change', (next) => {
       if (next.operationType !== 'replace' && next.operationType !== 'update') {
         return;
@@ -26,12 +28,12 @@ class DBListener {
       const { serverID } = next.fullDocument;
       const { channelID } = next.fullDocument.reactMessage;
 
-      let battleTimeout;
-
       let guild; let channel;
 
       // TODO: redo this system
       const voteReactionCollectors = [];
+
+      const reactionCollectors = [];
 
       // participant role
       let role;
@@ -121,6 +123,7 @@ class DBListener {
                   // eslint-disable-next-line max-len
                   const voteReactionCollector = voteMsg.createReactionCollector(filter, { time: 2700 * 1000 });
                   voteReactionCollectors.push(voteReactionCollector);
+                  reactionCollectors.push(voteReactionCollector);
 
                   // tracks the number of reactions
                   let numReactions = 0;
@@ -243,8 +246,13 @@ class DBListener {
 
       else if (currentStatus === 'STOPPING') {
         logger.success('stopping battle');
-
         clearTimeout(battleTimeout);
+
+        for (let i = 0; i < voteReactionCollectors.length; i += 1) {
+          // console.log('stopping vote reaction collector');
+          voteReactionCollectors[i].stop();
+        }
+
         Battle.deleteOne({ serverID: serverID, status: 'STOPPING' }).then(() => {
           return channel.send('Battle cancelled');
         });

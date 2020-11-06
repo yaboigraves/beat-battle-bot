@@ -134,6 +134,7 @@ class BattleCommand extends Command {
       message.channel.send(reactEmbed).then((msg) => {
         msg.react('⚔️');
 
+        // TODO: move this to the db listener
         const collector = msg.createReactionCollector(reactFilter, { time: timeout * 1000 });
 
         collector.on('end', (collected) => {
