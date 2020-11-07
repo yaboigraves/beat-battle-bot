@@ -140,9 +140,10 @@ class DBListener {
       // TODO: reipliment correct time to this, probably need to pull the length from the db
       else if (currentStatus === 'BATTLING') {
         Battle.findOne({ serverID, status: 'BATTLING' }).then((serverBattle) => {
+          channel.send(`Battle will run for ${next.fullDocument.length} minutes. To check how much time you have left, use .timeleft. Good luck!`);
           battleTimeout = setTimeout(() => {
             return channel.send(`Battles over ${role}! Run the .vote command to enter the voting phase once everyone has submit.`);
-          }, serverBattle.length * 1000);
+          }, next.fullDocument.length * 1000 * 60);
         });
       }
 

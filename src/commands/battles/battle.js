@@ -27,17 +27,18 @@ class BattleCommand extends Command {
           // time in minutes for the battle to last
           // 10 minutes to 4 hours
           // todo: inhibitor for incorrect argument
+
           id: 'time',
-          type: Argument.range('number', 3, 10000),
+          type: Argument.range('number', 3, 360),
           default: '30',
           match: 'option',
           flag: 'length:',
         },
         {
           // time in minutes to watch for reactions
-          // 1 to 15 minutes
+          // 5 seconds to 10 minutes
           id: 'timeout',
-          type: Argument.range('number', 1, 500),
+          type: Argument.range('number', 5, 600),
           default: '30', // temporary, in seconds
           match: 'option',
           flag: 'timeout:',
@@ -51,7 +52,7 @@ class BattleCommand extends Command {
       description: {
         icon: ':crossed_swords:',
         content: 'Start a beatbattle.',
-        usage: '.battle [sample] length:30 timeout:10',
+        usage: '.battle [sample] length:30 (min) timeout: 30 (seconds)',
       },
     });
   }
@@ -94,7 +95,6 @@ class BattleCommand extends Command {
     // battle in progress
     Battle.find({ serverID: message.guild.id }).then((serverBattles) => {
       for (let i = 0; i < serverBattles.length; i += 1) {
-        logger.success(serverBattles[i].active);
         if (serverBattles[i].active !== false) {
           const embed = this.client.util.embed()
             .setColor('RED')
@@ -107,7 +107,7 @@ class BattleCommand extends Command {
 
       // create the battle and append it to the DB in the preparing state
       const t = timeout;
-
+      logger.success(time);
       const battleOpts = {
         serverID: message.guild.id,
         length: time,
