@@ -28,8 +28,8 @@ class TimeLeftCommand extends Command {
       // now - start -> how much time has passed
       // left = length - timepassed
 
-      const timeLeft = (battle.length * 1000) - (Date.now() - battle.date);
-      return message.channel.send(`${timeLeft / 1000} seconds left`);
+      const timeLeft = (battle.length * 1000 * 60) - (Date.now() - battle.date);
+      return message.channel.send(`${timeLeft / 1000 / 60} minutes left`);
     });
   }
 }

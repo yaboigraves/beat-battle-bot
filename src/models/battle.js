@@ -46,14 +46,14 @@ const battle = new mongoose.Schema({
   length: {
     type: Number,
     required: true,
-    default: 30,
+    default: 20,
   },
 
   // start timeout time
   timeout: {
     type: Number,
     required: true,
-    default: 30,
+    default: 20,
   },
 
   sample: {
