@@ -12,6 +12,7 @@ const Downloader = require('../../ytdownloader');
 const dl = new Downloader();
 
 const utility = require('../../utility/utility');
+const logger = require('../../logger');
 
 class BattleCommand extends Command {
   constructor() {
@@ -93,7 +94,8 @@ class BattleCommand extends Command {
     // battle in progress
     Battle.find({ serverID: message.guild.id }).then((serverBattles) => {
       for (let i = 0; i < serverBattles.length; i += 1) {
-        if (serverBattles[i].active) {
+        logger.success(serverBattles[i].active);
+        if (serverBattles[i].active !== false) {
           const embed = this.client.util.embed()
             .setColor('RED')
             .setTitle(':warning: Battle in Progress')
@@ -105,6 +107,7 @@ class BattleCommand extends Command {
 
       // create the battle and append it to the DB in the preparing state
       const t = timeout;
+
       const battleOpts = {
         serverID: message.guild.id,
         length: time,
@@ -122,7 +125,6 @@ class BattleCommand extends Command {
       const battle = new Battle(battleOpts);
       battle.save().then(() => {
         // very nice callback yes :)
-        Battle.updateOne({ serverID: message.guild.id, active: true }, { $set: { status: 'PREPARING', timeout: 15 } });
       });
 
       // update the db with nothing to trigger a change stream
