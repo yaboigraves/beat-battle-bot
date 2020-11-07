@@ -19,7 +19,11 @@ class DBListener {
     const options = { fullDocument: 'updateLookup' };
     const changeStream = Battle.watch(options);
 
+    // so these will need to be stored in a dictionary of server ids to lists
+
     let battleTimeout;
+
+    const reactionCollectors = {};
 
     changeStream.on('change', (next) => {
       // check if its an insert
@@ -34,9 +38,6 @@ class DBListener {
       let guild; let channel;
 
       // TODO: redo this system
-      const voteReactionCollectors = [];
-
-      const reactionCollectors = [];
 
       // participant role
       let role;
@@ -88,8 +89,11 @@ class DBListener {
           channel.send(reactEmbed).then((msg) => {
             msg.react('⚔️');
 
-            const collector = msg.createReactionCollector(reactFilter, { time: serverBattle.timeout * 1000 });
-            reactionCollectors.push(collector);
+            const collector = msg.createReactionCollector(reactFilter, { time: next.fullDocument.timeout * 1000 });
+
+            // reactionCollectors.push(collector);
+            reactionCollectors[channel.guild.id] = [collector];
+
             collector.on('end', (collected) => {
             // nobody reacted
               if (!collected.first()) {
@@ -197,8 +201,11 @@ class DBListener {
                   };
 
                   const voteReactionCollector = voteMsg.createReactionCollector(filter, { time: 2700 * 1000 });
-                  voteReactionCollectors.push(voteReactionCollector);
-                  reactionCollectors.push(voteReactionCollector);
+                  // voteReactionCollectors.push(voteReactionCollector);
+
+                  // reactionCollectors.push(voteReactionCollector);
+
+                  reactionCollectors[channel.guild.id].push(voteReactionCollector);
 
                   // tracks the number of reactions
                   let numReactions = 0;
@@ -270,9 +277,15 @@ class DBListener {
         Battle.findOne({ serverID: serverID, status: 'RESULTS' }).then((resultsBattle) => {
           let winner;
 
-          for (let i = 0; i < voteReactionCollectors.length; i += 1) {
-            // console.log('stopping vote reaction collector');
-            voteReactionCollectors[i].stop();
+          // for (let i = 0; i < voteReactionCollectors.length; i += 1) {
+          //   // console.log('stopping vote reaction collector');
+          //   voteReactionCollectors[i].stop();
+          // }
+
+          // instead of going through the voting collectors just go through all the collectors
+
+          for (let i = 0; i < reactionCollectors[serverID].length; i += 1) {
+            reactionCollectors[serverID][i].stop();
           }
 
           winner = {
@@ -321,15 +334,18 @@ class DBListener {
       }
 
       else if (currentStatus === 'STOPPING') {
-        clearTimeout(battleTimeout);
+        if (battleTimeout) {
+          clearTimeout(battleTimeout);
+        }
 
-        for (let i = 0; i < voteReactionCollectors.length; i += 1) {
-          // console.log('stopping vote reaction collector');
-          voteReactionCollectors[i].stop();
+        if (reactionCollectors[serverID] !== undefined) {
+          for (let i = 0; i < reactionCollectors[serverID].length; i += 1) {
+            reactionCollectors[serverID][i].stop();
+          }
         }
 
         Battle.deleteOne({ serverID: serverID, status: 'STOPPING' }).then(() => {
-          return channel.send('Battle cancelled');
+          channel.send('Battle cancelled');
         });
       }
     });
