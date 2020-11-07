@@ -150,9 +150,6 @@ class DBListener {
         // accessed in the finished condtional
 
         // TODO: check if this should be owner ID or something else
-        const filter = (reaction, user) => {
-          return ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣'].includes(reaction.emoji.name) && user.id !== AkairoClient.ownerID;
-        };
 
         Battle.findOne({ serverID, status: 'VOTING' }).then((battleResults) => {
           if (battleResults === null) {
@@ -184,6 +181,7 @@ class DBListener {
               .setTitle(`:crossed_swords: ${battleResults.submissions[battleResults.playerIDs[i]]}`)
               .setDescription(`Submitted By <@${battleResults.playerIDs[i]}>`);
 
+            // eslint-disable-next-line no-loop-func
             channel.send(voteReactEmbed).then((voteMsg) => {
               voteMsg.react('1️⃣')
                 .then(() => voteMsg.react('2️⃣'))
@@ -192,6 +190,12 @@ class DBListener {
                 .then(() => voteMsg.react('5️⃣'))
                 .then(() => {
                   // eslint-disable-next-line max-len
+
+                  // so the filter needs to be created unique for each collector to stop self voting
+                  const filter = (reaction, user) => {
+                    return ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣'].includes(reaction.emoji.name) && user.id !== AkairoClient.ownerID && user.id !== battleResults.playerIDs[i];
+                  };
+
                   const voteReactionCollector = voteMsg.createReactionCollector(filter, { time: 2700 * 1000 });
                   voteReactionCollectors.push(voteReactionCollector);
                   reactionCollectors.push(voteReactionCollector);
@@ -204,6 +208,7 @@ class DBListener {
 
                   voteReactionCollector.on('collect', (reaction, user) => {
                     // console.log(`Collected ${reaction.emoji.name} from ${user.tag}`);
+
                     if (!usersReacted.includes(user.id)) {
                       numReactions += 1;
                       usersReacted.push(user.id);
@@ -240,7 +245,7 @@ class DBListener {
                     }
 
                     score += voteSubmissionScore;
-                    voteMsg.edit(voteReactEmbed.setDescription(`${numReactions}/${battleResults.playerIDs.length} votes recieved. \n Current Score : ${score} `));
+                    voteMsg.edit(voteReactEmbed.setDescription(`${numReactions}/${battleResults.playerIDs.length - 1} votes recieved. \n Current Score : ${score} `));
 
                     // update the db with the score
                     // eslint-disable-next-line object-shorthand
