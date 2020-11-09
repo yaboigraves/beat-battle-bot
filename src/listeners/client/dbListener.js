@@ -79,23 +79,31 @@ class DBListener {
 
           const reactFilter = (reaction, user) => {
             return ['⚔️'].includes(reaction.emoji.name) && user.id !== this.client.user.id;
+            // return ['⚔️'].includes(reaction.emoji.name);
           };
 
           const reactEmbed = this.client.util.embed()
             .setColor('GOLD')
             .setTitle(':crossed_swords: A battle is about to begin')
-            .setDescription(`React to this message with :crossed_swords: to join the battle.\nIt will begin in **${next.fullDocument.timeout} seconds**.`);
+            .setDescription(`React to this message with :crossed_swords: to join the battle.\nIt will begin in **${next.fullDocument.timeout} seconds**. \n 
+            If your name is not appearing above, type a message in chat then react again.`);
 
           channel.send(reactEmbed).then((msg) => {
             msg.react('⚔️');
+            msg.edit('Battlers : ');
 
             const collector = msg.createReactionCollector(reactFilter, { time: next.fullDocument.timeout * 1000 });
 
             // reactionCollectors.push(collector);
             reactionCollectors[channel.guild.id] = [collector];
 
+            collector.on('collect', (reaction, user) => {
+              msg.edit(`${msg.content} ${user}`);
+            });
+
             collector.on('end', (collected) => {
             // nobody reacted
+
               if (!collected.first()) {
                 const embed = this.client.util.embed()
                   .setColor('RED')
@@ -107,16 +115,16 @@ class DBListener {
               }
 
               const reacts = collected.first().message.reactions.cache;
-              // message.channel.send(`${reacts.first().count - 1} people reacted`);
-              // console.log(swords.first().users.cache);
 
-              // list of all the players in the battle
-              const reactedIDs = [];
+              // const reactedIDs = Array.from(reacts.first().users.cache.keys());
+              // eslint-disable-next-line prefer-const
+              let reactedIDs = [];
 
               // give all the players the participant role
               reacts.first().users.cache.forEach((user) => {
                 if (user.id !== this.client.user.id) {
                   reactedIDs.push(user.id);
+
                   if (role) {
                     channel.guild.members.cache.get(user.id).roles.add(role);
                   }
@@ -259,7 +267,13 @@ class DBListener {
                     // eslint-disable-next-line object-shorthand
                     Battle.findOne({ serverID: serverID, status: 'VOTING' }).then((serverBattle2) => {
                       const { submissionsScores } = serverBattle2;
-                      submissionsScores[serverBattle2.playerIDs[i]] = voteSubmissionScore;
+                      // aha!
+                      if (submissionsScores[serverBattle2.playerIDs[i]]) {
+                        submissionsScores[serverBattle2.playerIDs[i]] += voteSubmissionScore;
+                      }
+                      else {
+                        submissionsScores[serverBattle2.playerIDs[i]] = voteSubmissionScore;
+                      }
 
                       // eslint-disable-next-line object-shorthand
                       Battle.updateOne({ serverID: serverID, status: 'VOTING' }, { $set: { submissionsScores } }, () => {
@@ -277,13 +291,6 @@ class DBListener {
         // db query for the battle because i think the reference is broken
         Battle.findOne({ serverID: serverID, status: 'RESULTS' }).then((resultsBattle) => {
           let winner;
-
-          // for (let i = 0; i < voteReactionCollectors.length; i += 1) {
-          //   // console.log('stopping vote reaction collector');
-          //   voteReactionCollectors[i].stop();
-          // }
-
-          // instead of going through the voting collectors just go through all the collectors
 
           for (let i = 0; i < reactionCollectors[serverID].length; i += 1) {
             reactionCollectors[serverID][i].stop();
