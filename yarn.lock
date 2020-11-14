@@ -1696,6 +1696,13 @@ fclone@1.0.11, fclone@~1.0.11:
   resolved "https://registry.yarnpkg.com/fclone/-/fclone-1.0.11.tgz#10e85da38bfea7fc599341c296ee1d77266ee640"
   integrity sha1-EOhdo4v+p/xZk0HClu4ddyZu5kA=
 
+ffmpeg-extract-audio@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/ffmpeg-extract-audio/-/ffmpeg-extract-audio-1.0.2.tgz#7b0b14adb704fb0093153d83f301c57987cde4b4"
+  integrity sha1-ewsUrbcE+wCTFT2D8wHFeYfN5LQ=
+  dependencies:
+    fluent-ffmpeg "^2.1.2"
+
 file-entry-cache@^5.0.1:
   version "5.0.1"
   resolved "https://registry.yarnpkg.com/file-entry-cache/-/file-entry-cache-5.0.1.tgz#ca0f6efa6dd3d561333fb14515065c2fafdf439c"

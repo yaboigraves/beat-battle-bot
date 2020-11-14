@@ -16,7 +16,7 @@ class ResultsCommand extends Command {
 
   async exec(message) {
     // figure out which server battle we're getting the results from
-
+    // fdasd
     const header = this.client.util.embed()
       .setColor('RED')
       .setTitle(':crossed_swords: RESULTS :crossed_swords:');
