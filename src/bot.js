@@ -69,4 +69,3 @@ const dbListner = new DBListener(client);
 
 // clear the temp folder
 utility.clearTempFiles();
-

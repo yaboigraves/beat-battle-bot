@@ -1,0 +1,7 @@
+{
+    "watch": ["."],
+    "ignore_watch" : ["node_modules", "temp"],
+    "watch_options": {
+      "followSymlinks": false
+    }
+  }
